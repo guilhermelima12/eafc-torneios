@@ -320,22 +320,6 @@
     "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ol"
   },
   {
-    "id": "flamengo",
-    "name": "Flamengo",
-    "country": "Brazil",
-    "league": "Serie A Brasil",
-    "overall": 79,
-    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Fl"
-  },
-  {
-    "id": "palmeiras",
-    "name": "Palmeiras",
-    "country": "Brazil",
-    "league": "Serie A Brasil",
-    "overall": 79,
-    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Pa"
-  },
-  {
     "id": "ajax",
     "name": "Ajax",
     "country": "Netherlands",
@@ -584,14 +568,6 @@
     "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=LA"
   },
   {
-    "id": "atletico-mineiro",
-    "name": "Atlético Mineiro",
-    "country": "Brazil",
-    "league": "Serie A Brasil",
-    "overall": 77,
-    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=At"
-  },
-  {
     "id": "rangers",
     "name": "Rangers",
     "country": "Scotland",
@@ -736,38 +712,6 @@
     "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=At"
   },
   {
-    "id": "sao-paulo",
-    "name": "São Paulo",
-    "country": "Brazil",
-    "league": "Serie A Brasil",
-    "overall": 76,
-    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=S%C3%A3"
-  },
-  {
-    "id": "corinthians",
-    "name": "Corinthians",
-    "country": "Brazil",
-    "league": "Serie A Brasil",
-    "overall": 76,
-    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Co"
-  },
-  {
-    "id": "fluminense",
-    "name": "Fluminense",
-    "country": "Brazil",
-    "league": "Serie A Brasil",
-    "overall": 76,
-    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Fl"
-  },
-  {
-    "id": "botafogo",
-    "name": "Botafogo",
-    "country": "Brazil",
-    "league": "Serie A Brasil",
-    "overall": 76,
-    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Bo"
-  },
-  {
     "id": "club-brugge",
     "name": "Club Brugge",
     "country": "Belgium",
@@ -870,30 +814,6 @@
     "league": "MLS",
     "overall": 75,
     "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Co"
-  },
-  {
-    "id": "santos",
-    "name": "Santos",
-    "country": "Brazil",
-    "league": "Serie A Brasil",
-    "overall": 75,
-    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Sa"
-  },
-  {
-    "id": "gremio",
-    "name": "Grêmio",
-    "country": "Brazil",
-    "league": "Serie A Brasil",
-    "overall": 75,
-    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Gr"
-  },
-  {
-    "id": "internacional",
-    "name": "Internacional",
-    "country": "Brazil",
-    "league": "Serie A Brasil",
-    "overall": 75,
-    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=In"
   },
   {
     "id": "racing",
@@ -1070,22 +990,6 @@
     "league": "MLS",
     "overall": 74,
     "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Re"
-  },
-  {
-    "id": "athletico-pr",
-    "name": "Athletico-PR",
-    "country": "Brazil",
-    "league": "Serie A Brasil",
-    "overall": 74,
-    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=At"
-  },
-  {
-    "id": "vasco",
-    "name": "Vasco da Gama",
-    "country": "Brazil",
-    "league": "Serie A Brasil",
-    "overall": 74,
-    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Va"
   },
   {
     "id": "independiente",
