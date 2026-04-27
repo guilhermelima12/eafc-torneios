@@ -92,46 +92,66 @@ const Dashboard = () => {
         return;
       }
 
-      // Auto-update seeds based on final standings
-      const tournamentPlayers = JSON.parse(localStorage.getItem('tournamentPlayers') || '[]');
+      // ─── Auto-update seeds based on final standings ───────────────────
       const bracketMatches = JSON.parse(localStorage.getItem('tournamentMatches') || '[]');
+      const qualifiedPlayers = JSON.parse(localStorage.getItem('tournamentPlayers') || '[]');
+      const groupsData = JSON.parse(localStorage.getItem('tournamentGroups') || 'null');
 
-      // Build final standings from bracket (by elimination round)
-      if (bracketMatches.length > 0 && tournamentPlayers.length > 0) {
-        // Group matches by round
-        const rounds = {};
-        bracketMatches.forEach(m => {
-          if (!rounds[m.round]) rounds[m.round] = [];
-          rounds[m.round].push(m);
+      const standings = [];
+      const added = new Set();
+
+      // 1) Process bracket matches from highest round (Final) down to lowest
+      if (bracketMatches.length > 0) {
+        const finishedMatches = bracketMatches
+          .filter(m => m.winner)
+          .sort((a, b) => b.round - a.round);
+
+        finishedMatches.forEach(match => {
+          const winner = match.winner;
+          // Loser is whichever of p1/p2 is NOT the winner
+          const loser = match.p1?.id === winner?.id ? match.p2 : match.p1;
+
+          if (winner && !added.has(winner.name)) {
+            standings.push(winner);
+            added.add(winner.name);
+          }
+          if (loser && !added.has(loser.name)) {
+            standings.push(loser);
+            added.add(loser.name);
+          }
         });
-        const sortedRounds = Object.keys(rounds).sort((a, b) => parseInt(b) - parseInt(a));
+      }
 
-        // Build standings: champion first, then runner-up, then by round eliminated
-        const standings = [];
-        const added = new Set();
+      // 2) Add qualified players who never appeared in bracket (edge case)
+      qualifiedPlayers.forEach(p => {
+        if (!added.has(p.name)) {
+          standings.push(p);
+          added.add(p.name);
+        }
+      });
 
-        sortedRounds.forEach((round, roundIdx) => {
-          rounds[round].forEach(match => {
-            const winner = match.score1 > match.score2 ? match.player1 : match.score2 > match.score1 ? match.player2 : null;
-            const loser = match.score1 > match.score2 ? match.player2 : match.score2 > match.score1 ? match.player1 : null;
-
-            if (roundIdx === 0 && winner && !added.has(winner?.name)) {
-              standings.push(winner);
-              added.add(winner?.name);
-            }
-            if (loser && !added.has(loser?.name)) {
-              standings.push(loser);
-              added.add(loser?.name);
+      // 3) Add players eliminated in the group stage (ranked by group position)
+      if (groupsData) {
+        const groupEliminated = [];
+        groupsData.forEach(group => {
+          group.forEach((p, idx) => {
+            if (!added.has(p.name)) {
+              groupEliminated.push({ player: p, groupRank: idx });
             }
           });
         });
-
-        // Add remaining players not in bracket (group stage only)
-        tournamentPlayers.forEach(p => {
-          if (!added.has(p.name)) standings.push(p);
+        // Sort: lower group rank = better position → goes first
+        groupEliminated.sort((a, b) => a.groupRank - b.groupRank);
+        groupEliminated.forEach(({ player }) => {
+          if (!added.has(player.name)) {
+            standings.push(player);
+            added.add(player.name);
+          }
         });
+      }
 
-        // Update seeds in Supabase for each registered player
+      // 4) Write the new seeds to Supabase (position in standings = new seed)
+      if (standings.length > 0) {
         const { data: dbPlayers } = await supabase.from('players').select('id, name');
         if (dbPlayers) {
           const updatePromises = standings.map((player, idx) => {
