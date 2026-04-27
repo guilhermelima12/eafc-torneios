@@ -86,7 +86,7 @@ const PlayerRegistration = () => {
   };
 
   const startDraft = () => {
-    const sortedPlayers = [...players].sort((a, b) => a.lastRank - b.lastRank);
+    const sortedPlayers = [...players].sort((a, b) => b.lastRank - a.lastRank);
     setPlayers(sortedPlayers);
     setStep('draft');
   };

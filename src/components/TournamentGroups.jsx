@@ -144,12 +144,22 @@ const TournamentGroups = ({ players, onFinishGroups, readOnly = false, historyGr
   const handleAdvance = () => {
     if (readOnly) return;
     const qualified = [];
-    groupsData.forEach(group => {
-      qualified.push(group[0]);
-      if (group.length > 1) {
-        qualified.push(group[1]);
+
+    if (groupsData.length === 1) {
+      // Single group: advance top 4 for a proper 4-player bracket (or top 2 if group has <= 3 players)
+      const group = groupsData[0];
+      const spots = group.length >= 4 ? 4 : 2;
+      for (let i = 0; i < spots && i < group.length; i++) {
+        qualified.push(group[i]);
       }
-    });
+    } else {
+      // Multiple groups: advance top 2 from each group
+      groupsData.forEach(group => {
+        qualified.push(group[0]);
+        if (group.length > 1) qualified.push(group[1]);
+      });
+    }
+
     onFinishGroups(qualified);
   };
 

@@ -2,14 +2,11 @@ import React, { useState, useEffect } from 'react';
 import TeamLogo from './TeamLogo';
 import { Trophy } from 'lucide-react';
 
-// Bracket Generation Logic for 8 or 4 players
+// Bracket Generation Logic for 8, 4 or 2 players
 const generateKnockoutMatches = (players) => {
   const matches = [];
-  // Assumes players are sorted by seed (1 to N)
-  // Cross pairings: 1x8, 4x5, 3x6, 2x7 for 8 players
-  // For 4 players: 1x4, 2x3
   const count = players.length;
-  
+
   if (count === 8) {
     matches.push({ id: 1, round: 1, p1: players[0], p2: players[7], score1: null, score2: null, winner: null });
     matches.push({ id: 2, round: 1, p1: players[3], p2: players[4], score1: null, score2: null, winner: null });
@@ -18,6 +15,9 @@ const generateKnockoutMatches = (players) => {
   } else if (count === 4) {
     matches.push({ id: 1, round: 1, p1: players[0], p2: players[3], score1: null, score2: null, winner: null });
     matches.push({ id: 2, round: 1, p1: players[1], p2: players[2], score1: null, score2: null, winner: null });
+  } else if (count === 2) {
+    // Direct final (e.g. 3-player single group where only top 2 advance)
+    matches.push({ id: 3, round: 2, p1: players[0], p2: players[1], score1: null, score2: null, winner: null });
   }
   return matches;
 };
@@ -214,10 +214,18 @@ const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPla
 
       <div style={{ display: 'flex', gap: '4rem', minWidth: '800px', justifyContent: 'center' }}>
         {players.length === 8 && renderColumn(1, [1, 2, 3, 4], 'Quartas de Final')}
-        
-        {players.length === 8 ? renderColumn(2, [5, 6], 'Semifinal') : renderColumn(1, [1, 2], 'Semifinal')}
-        
-        {players.length === 8 ? renderColumn(3, [7], 'Final') : renderColumn(2, [3], 'Final')}
+
+        {players.length === 8
+          ? renderColumn(2, [5, 6], 'Semifinal')
+          : players.length === 4
+          ? renderColumn(1, [1, 2], 'Semifinal')
+          : null}
+
+        {players.length === 8
+          ? renderColumn(3, [7], 'Final')
+          : players.length === 4
+          ? renderColumn(2, [3], 'Final')
+          : renderColumn(2, [3], 'Final')}
       </div>
     </div>
   );
