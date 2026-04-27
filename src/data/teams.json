@@ -1,43 +1,1410 @@
 [
-  { "id": "real-madrid", "name": "Real Madrid", "country": "Spain", "league": "LALIGA", "overall": 85, "logo": "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg" },
-  { "id": "man-city", "name": "Manchester City", "country": "England", "league": "Premier League", "overall": 85, "logo": "https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg" },
-  { "id": "bayern", "name": "FC Bayern", "country": "Germany", "league": "Bundesliga", "overall": 84, "logo": "https://upload.wikimedia.org/wikipedia/commons/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg" },
-  { "id": "liverpool", "name": "Liverpool", "country": "England", "league": "Premier League", "overall": 84, "logo": "https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg" },
-  { "id": "arsenal", "name": "Arsenal", "country": "England", "league": "Premier League", "overall": 84, "logo": "https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg" },
-  { "id": "barcelona", "name": "FC Barcelona", "country": "Spain", "league": "LALIGA", "overall": 84, "logo": "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg" },
-  { "id": "psg", "name": "Paris SG", "country": "France", "league": "Ligue 1", "overall": 83, "logo": "https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg" },
-  { "id": "inter", "name": "Inter Milan", "country": "Italy", "league": "Serie A", "overall": 83, "logo": "https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg" },
-  { "id": "atletico", "name": "Atlético Madrid", "country": "Spain", "league": "LALIGA", "overall": 83, "logo": "https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg" },
-  { "id": "leverkusen", "name": "Bayer Leverkusen", "country": "Germany", "league": "Bundesliga", "overall": 83, "logo": "https://upload.wikimedia.org/wikipedia/en/5/59/Bayer_04_Leverkusen_logo.svg" },
-  { "id": "ac-milan", "name": "AC Milan", "country": "Italy", "league": "Serie A", "overall": 82, "logo": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Logo_of_AC_Milan.svg" },
-  { "id": "juventus", "name": "Juventus", "country": "Italy", "league": "Serie A", "overall": 82, "logo": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Juventus_FC_2017_icon_%28black%29.svg" },
-  { "id": "dortmund", "name": "Borussia Dortmund", "country": "Germany", "league": "Bundesliga", "overall": 82, "logo": "https://upload.wikimedia.org/wikipedia/commons/6/67/Borussia_Dortmund_logo.svg" },
-  { "id": "man-utd", "name": "Manchester Utd", "country": "England", "league": "Premier League", "overall": 82, "logo": "https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg" },
-  { "id": "tottenham", "name": "Tottenham Hotspur", "country": "England", "league": "Premier League", "overall": 82, "logo": "https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg" },
-  { "id": "leipzig", "name": "RB Leipzig", "country": "Germany", "league": "Bundesliga", "overall": 82, "logo": "https://upload.wikimedia.org/wikipedia/en/0/04/RB_Leipzig_2014_logo.svg" },
-  { "id": "aston-villa", "name": "Aston Villa", "country": "England", "league": "Premier League", "overall": 81, "logo": "https://upload.wikimedia.org/wikipedia/en/f/f9/Aston_Villa_FC_crest_%282016%29.svg" },
-  { "id": "newcastle", "name": "Newcastle United", "country": "England", "league": "Premier League", "overall": 81, "logo": "https://upload.wikimedia.org/wikipedia/en/5/56/Newcastle_United_Logo.svg" },
-  { "id": "napoli", "name": "SSC Napoli", "country": "Italy", "league": "Serie A", "overall": 81, "logo": "https://upload.wikimedia.org/wikipedia/commons/2/28/S.S.C._Napoli_logo.svg" },
-  { "id": "chelsea", "name": "Chelsea", "country": "England", "league": "Premier League", "overall": 81, "logo": "https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg" },
-  { "id": "roma", "name": "AS Roma", "country": "Italy", "league": "Serie A", "overall": 80, "logo": "https://upload.wikimedia.org/wikipedia/en/f/f7/AS_Roma_logo_%282017%29.svg" },
-  { "id": "benfica", "name": "SL Benfica", "country": "Portugal", "league": "Liga Portugal", "overall": 80, "logo": "https://upload.wikimedia.org/wikipedia/en/a/a2/SL_Benfica_logo.svg" },
-  { "id": "porto", "name": "FC Porto", "country": "Portugal", "league": "Liga Portugal", "overall": 80, "logo": "https://upload.wikimedia.org/wikipedia/en/f/f1/FC_Porto.svg" },
-  { "id": "west-ham", "name": "West Ham", "country": "England", "league": "Premier League", "overall": 80, "logo": "https://upload.wikimedia.org/wikipedia/en/c/c2/West_Ham_United_FC_logo.svg" },
-  { "id": "lazio", "name": "Lazio", "country": "Italy", "league": "Serie A", "overall": 80, "logo": "https://upload.wikimedia.org/wikipedia/en/e/e4/S.S._Lazio_badge.svg" },
-  { "id": "atalanta", "name": "Atalanta", "country": "Italy", "league": "Serie A", "overall": 80, "logo": "https://upload.wikimedia.org/wikipedia/en/6/66/AtalantaBC.svg" },
-  { "id": "sporting", "name": "Sporting CP", "country": "Portugal", "league": "Liga Portugal", "overall": 79, "logo": "https://upload.wikimedia.org/wikipedia/en/e/e2/Sporting_CP_logo.svg" },
-  { "id": "sevilla", "name": "Sevilla FC", "country": "Spain", "league": "LALIGA", "overall": 79, "logo": "https://upload.wikimedia.org/wikipedia/en/3/3b/Sevilla_FC_logo.svg" },
-  { "id": "fiorentina", "name": "Fiorentina", "country": "Italy", "league": "Serie A", "overall": 79, "logo": "https://upload.wikimedia.org/wikipedia/commons/1/12/ACF_Fiorentina_2022_logo.svg" },
-  { "id": "real-sociedad", "name": "Real Sociedad", "country": "Spain", "league": "LALIGA", "overall": 79, "logo": "https://upload.wikimedia.org/wikipedia/en/f/f1/Real_Sociedad_logo.svg" },
-  { "id": "athletic-club", "name": "Athletic Club", "country": "Spain", "league": "LALIGA", "overall": 79, "logo": "https://upload.wikimedia.org/wikipedia/en/9/98/Club_Athletic_Bilbao_logo.svg" },
-  { "id": "marseille", "name": "OM", "country": "France", "league": "Ligue 1", "overall": 79, "logo": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Olympique_Marseille_logo.svg" },
-  { "id": "ajax", "name": "Ajax", "country": "Netherlands", "league": "Eredivisie", "overall": 78, "logo": "https://upload.wikimedia.org/wikipedia/en/7/79/Ajax_Amsterdam.svg" },
-  { "id": "psv", "name": "PSV Eindhoven", "country": "Netherlands", "league": "Eredivisie", "overall": 78, "logo": "https://upload.wikimedia.org/wikipedia/en/0/05/PSV_Eindhoven.svg" },
-  { "id": "river-plate", "name": "River Plate", "country": "Argentina", "league": "LPF", "overall": 78, "logo": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_River_Plate_1931-act.png" },
-  { "id": "boca-juniors", "name": "Boca Juniors", "country": "Argentina", "league": "LPF", "overall": 78, "logo": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Boca_Juniors_logo18.svg" },
-  { "id": "al-hilal", "name": "Al Hilal", "country": "Saudi Arabia", "league": "ROSHN", "overall": 78, "logo": "https://upload.wikimedia.org/wikipedia/en/7/7c/Al-Hilal_Saudi_FC_logo.svg" },
-  { "id": "galatasaray", "name": "Galatasaray", "country": "Turkey", "league": "Super Lig", "overall": 77, "logo": "https://upload.wikimedia.org/wikipedia/commons/3/37/Galatasaray_Star_Logo.svg" },
-  { "id": "fenerbahce", "name": "Fenerbahçe", "country": "Turkey", "league": "Super Lig", "overall": 77, "logo": "https://upload.wikimedia.org/wikipedia/en/3/39/Fenerbah%C3%A7e.svg" },
-  { "id": "al-nassr", "name": "Al Nassr", "country": "Saudi Arabia", "league": "ROSHN", "overall": 77, "logo": "https://upload.wikimedia.org/wikipedia/en/b/b3/Al-Nassr_FC_logo.svg" },
-  { "id": "inter-miami", "name": "Inter Miami", "country": "USA", "league": "MLS", "overall": 76, "logo": "https://upload.wikimedia.org/wikipedia/en/0/06/Inter_Miami_CF_logo.svg" }
+  {
+    "id": "real-madrid",
+    "name": "Real Madrid",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 85,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"
+  },
+  {
+    "id": "man-city",
+    "name": "Manchester City",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 85,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg"
+  },
+  {
+    "id": "bayern",
+    "name": "FC Bayern",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 84,
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg"
+  },
+  {
+    "id": "liverpool",
+    "name": "Liverpool",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 84,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg"
+  },
+  {
+    "id": "arsenal",
+    "name": "Arsenal",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 84,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg"
+  },
+  {
+    "id": "barcelona",
+    "name": "FC Barcelona",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 84,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg"
+  },
+  {
+    "id": "psg",
+    "name": "Paris SG",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 83,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg"
+  },
+  {
+    "id": "inter",
+    "name": "Inter Milan",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 83,
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg"
+  },
+  {
+    "id": "atletico",
+    "name": "Atlético Madrid",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 83,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg"
+  },
+  {
+    "id": "leverkusen",
+    "name": "Bayer Leverkusen",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 83,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/5/59/Bayer_04_Leverkusen_logo.svg"
+  },
+  {
+    "id": "ac-milan",
+    "name": "AC Milan",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 82,
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Logo_of_AC_Milan.svg"
+  },
+  {
+    "id": "juventus",
+    "name": "Juventus",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 82,
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Juventus_FC_2017_icon_%28black%29.svg"
+  },
+  {
+    "id": "dortmund",
+    "name": "Borussia Dortmund",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 82,
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/6/67/Borussia_Dortmund_logo.svg"
+  },
+  {
+    "id": "man-utd",
+    "name": "Manchester Utd",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 82,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg"
+  },
+  {
+    "id": "tottenham",
+    "name": "Tottenham Hotspur",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 82,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg"
+  },
+  {
+    "id": "leipzig",
+    "name": "RB Leipzig",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 82,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/0/04/RB_Leipzig_2014_logo.svg"
+  },
+  {
+    "id": "aston-villa",
+    "name": "Aston Villa",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 81,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/f/f9/Aston_Villa_FC_crest_%282016%29.svg"
+  },
+  {
+    "id": "newcastle",
+    "name": "Newcastle United",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 81,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/5/56/Newcastle_United_Logo.svg"
+  },
+  {
+    "id": "napoli",
+    "name": "SSC Napoli",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 81,
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/2/28/S.S.C._Napoli_logo.svg"
+  },
+  {
+    "id": "chelsea",
+    "name": "Chelsea",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 81,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg"
+  },
+  {
+    "id": "roma",
+    "name": "AS Roma",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 80,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/f/f7/AS_Roma_logo_%282017%29.svg"
+  },
+  {
+    "id": "benfica",
+    "name": "SL Benfica",
+    "country": "Portugal",
+    "league": "Liga Portugal",
+    "overall": 80,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/a/a2/SL_Benfica_logo.svg"
+  },
+  {
+    "id": "porto",
+    "name": "FC Porto",
+    "country": "Portugal",
+    "league": "Liga Portugal",
+    "overall": 80,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/f/f1/FC_Porto.svg"
+  },
+  {
+    "id": "west-ham",
+    "name": "West Ham",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 80,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/c/c2/West_Ham_United_FC_logo.svg"
+  },
+  {
+    "id": "lazio",
+    "name": "Lazio",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 80,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/e/e4/S.S._Lazio_badge.svg"
+  },
+  {
+    "id": "atalanta",
+    "name": "Atalanta",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 80,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/6/66/AtalantaBC.svg"
+  },
+  {
+    "id": "frankfurt",
+    "name": "Eintracht Frankfurt",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 80,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ei"
+  },
+  {
+    "id": "monaco",
+    "name": "AS Monaco",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 80,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=AS"
+  },
+  {
+    "id": "sporting",
+    "name": "Sporting CP",
+    "country": "Portugal",
+    "league": "Liga Portugal",
+    "overall": 79,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/e/e2/Sporting_CP_logo.svg"
+  },
+  {
+    "id": "sevilla",
+    "name": "Sevilla FC",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 79,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/3/3b/Sevilla_FC_logo.svg"
+  },
+  {
+    "id": "fiorentina",
+    "name": "Fiorentina",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 79,
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/1/12/ACF_Fiorentina_2022_logo.svg"
+  },
+  {
+    "id": "real-sociedad",
+    "name": "Real Sociedad",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 79,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/f/f1/Real_Sociedad_logo.svg"
+  },
+  {
+    "id": "athletic-club",
+    "name": "Athletic Club",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 79,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/9/98/Club_Athletic_Bilbao_logo.svg"
+  },
+  {
+    "id": "marseille",
+    "name": "OM",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 79,
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Olympique_Marseille_logo.svg"
+  },
+  {
+    "id": "villarreal",
+    "name": "Villarreal",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 79,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Vi"
+  },
+  {
+    "id": "wolfsburg",
+    "name": "VfL Wolfsburg",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 79,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Vf"
+  },
+  {
+    "id": "freiburg",
+    "name": "SC Freiburg",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 79,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=SC"
+  },
+  {
+    "id": "stuttgart",
+    "name": "VfB Stuttgart",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 79,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Vf"
+  },
+  {
+    "id": "lille",
+    "name": "LOSC Lille",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 79,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=LO"
+  },
+  {
+    "id": "lyon",
+    "name": "Olympique Lyon",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 79,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ol"
+  },
+  {
+    "id": "flamengo",
+    "name": "Flamengo",
+    "country": "Brazil",
+    "league": "Serie A Brasil",
+    "overall": 79,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Fl"
+  },
+  {
+    "id": "palmeiras",
+    "name": "Palmeiras",
+    "country": "Brazil",
+    "league": "Serie A Brasil",
+    "overall": 79,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Pa"
+  },
+  {
+    "id": "ajax",
+    "name": "Ajax",
+    "country": "Netherlands",
+    "league": "Eredivisie",
+    "overall": 78,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/7/79/Ajax_Amsterdam.svg"
+  },
+  {
+    "id": "psv",
+    "name": "PSV Eindhoven",
+    "country": "Netherlands",
+    "league": "Eredivisie",
+    "overall": 78,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/0/05/PSV_Eindhoven.svg"
+  },
+  {
+    "id": "river-plate",
+    "name": "River Plate",
+    "country": "Argentina",
+    "league": "LPF",
+    "overall": 78,
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_River_Plate_1931-act.png"
+  },
+  {
+    "id": "boca-juniors",
+    "name": "Boca Juniors",
+    "country": "Argentina",
+    "league": "LPF",
+    "overall": 78,
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Boca_Juniors_logo18.svg"
+  },
+  {
+    "id": "al-hilal",
+    "name": "Al Hilal",
+    "country": "Saudi Arabia",
+    "league": "ROSHN",
+    "overall": 78,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/7/7c/Al-Hilal_Saudi_FC_logo.svg"
+  },
+  {
+    "id": "brighton",
+    "name": "Brighton",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 78,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Br"
+  },
+  {
+    "id": "nott-forest",
+    "name": "Nottm Forest",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 78,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=No"
+  },
+  {
+    "id": "real-betis",
+    "name": "Real Betis",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 78,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Re"
+  },
+  {
+    "id": "hoffenheim",
+    "name": "TSG Hoffenheim",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 78,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=TS"
+  },
+  {
+    "id": "mgladbach",
+    "name": "B. Mönchengladbach",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 78,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=B."
+  },
+  {
+    "id": "bologna",
+    "name": "Bologna",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 78,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Bo"
+  },
+  {
+    "id": "lens",
+    "name": "RC Lens",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 78,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=RC"
+  },
+  {
+    "id": "brest",
+    "name": "Stade Brest",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 78,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=St"
+  },
+  {
+    "id": "nice",
+    "name": "OGC Nice",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 78,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=OG"
+  },
+  {
+    "id": "rennes",
+    "name": "Stade Rennais",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 78,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=St"
+  },
+  {
+    "id": "feyenoord",
+    "name": "Feyenoord",
+    "country": "Netherlands",
+    "league": "Eredivisie",
+    "overall": 78,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Fe"
+  },
+  {
+    "id": "celtic",
+    "name": "Celtic",
+    "country": "Scotland",
+    "league": "Scottish Premiership",
+    "overall": 78,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ce"
+  },
+  {
+    "id": "galatasaray",
+    "name": "Galatasaray",
+    "country": "Turkey",
+    "league": "Super Lig",
+    "overall": 77,
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/3/37/Galatasaray_Star_Logo.svg"
+  },
+  {
+    "id": "fenerbahce",
+    "name": "Fenerbahçe",
+    "country": "Turkey",
+    "league": "Super Lig",
+    "overall": 77,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/3/39/Fenerbah%C3%A7e.svg"
+  },
+  {
+    "id": "al-nassr",
+    "name": "Al Nassr",
+    "country": "Saudi Arabia",
+    "league": "ROSHN",
+    "overall": 77,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/b/b3/Al-Nassr_FC_logo.svg"
+  },
+  {
+    "id": "brentford",
+    "name": "Brentford",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 77,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Br"
+  },
+  {
+    "id": "fulham",
+    "name": "Fulham",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 77,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Fu"
+  },
+  {
+    "id": "bournemouth",
+    "name": "Bournemouth",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 77,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Bo"
+  },
+  {
+    "id": "valencia",
+    "name": "Valencia",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 77,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Va"
+  },
+  {
+    "id": "girona",
+    "name": "Girona",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 77,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Gi"
+  },
+  {
+    "id": "mainz",
+    "name": "1. FSV Mainz",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 77,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=1."
+  },
+  {
+    "id": "bremen",
+    "name": "Werder Bremen",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 77,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=We"
+  },
+  {
+    "id": "torino",
+    "name": "Torino",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 77,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=To"
+  },
+  {
+    "id": "braga",
+    "name": "SC Braga",
+    "country": "Portugal",
+    "league": "Liga Portugal",
+    "overall": 77,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=SC"
+  },
+  {
+    "id": "la-galaxy",
+    "name": "LA Galaxy",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 77,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=LA"
+  },
+  {
+    "id": "lafc",
+    "name": "LAFC",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 77,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=LA"
+  },
+  {
+    "id": "atletico-mineiro",
+    "name": "Atlético Mineiro",
+    "country": "Brazil",
+    "league": "Serie A Brasil",
+    "overall": 77,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=At"
+  },
+  {
+    "id": "rangers",
+    "name": "Rangers",
+    "country": "Scotland",
+    "league": "Scottish Premiership",
+    "overall": 77,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ra"
+  },
+  {
+    "id": "inter-miami",
+    "name": "Inter Miami",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 76,
+    "logo": "https://upload.wikimedia.org/wikipedia/en/0/06/Inter_Miami_CF_logo.svg"
+  },
+  {
+    "id": "crystal-palace",
+    "name": "Crystal Palace",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Cr"
+  },
+  {
+    "id": "everton",
+    "name": "Everton",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ev"
+  },
+  {
+    "id": "wolves",
+    "name": "Wolverhampton",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Wo"
+  },
+  {
+    "id": "rayo",
+    "name": "Rayo Vallecano",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ra"
+  },
+  {
+    "id": "osasuna",
+    "name": "Osasuna",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Os"
+  },
+  {
+    "id": "celta",
+    "name": "Celta Vigo",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ce"
+  },
+  {
+    "id": "heidenheim",
+    "name": "1. FC Heidenheim",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=1."
+  },
+  {
+    "id": "union-berlin",
+    "name": "1. FC Union Berlin",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=1."
+  },
+  {
+    "id": "monza",
+    "name": "Monza",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Mo"
+  },
+  {
+    "id": "strasbourg",
+    "name": "RC Strasbourg",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=RC"
+  },
+  {
+    "id": "reims",
+    "name": "Stade Reims",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=St"
+  },
+  {
+    "id": "az",
+    "name": "AZ Alkmaar",
+    "country": "Netherlands",
+    "league": "Eredivisie",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=AZ"
+  },
+  {
+    "id": "al-ittihad",
+    "name": "Al Ittihad",
+    "country": "Saudi Arabia",
+    "league": "ROSHN",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Al"
+  },
+  {
+    "id": "al-ahli",
+    "name": "Al Ahli",
+    "country": "Saudi Arabia",
+    "league": "ROSHN",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Al"
+  },
+  {
+    "id": "seattle",
+    "name": "Seattle Sounders",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Se"
+  },
+  {
+    "id": "atlanta",
+    "name": "Atlanta United",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=At"
+  },
+  {
+    "id": "sao-paulo",
+    "name": "São Paulo",
+    "country": "Brazil",
+    "league": "Serie A Brasil",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=S%C3%A3"
+  },
+  {
+    "id": "corinthians",
+    "name": "Corinthians",
+    "country": "Brazil",
+    "league": "Serie A Brasil",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Co"
+  },
+  {
+    "id": "fluminense",
+    "name": "Fluminense",
+    "country": "Brazil",
+    "league": "Serie A Brasil",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Fl"
+  },
+  {
+    "id": "botafogo",
+    "name": "Botafogo",
+    "country": "Brazil",
+    "league": "Serie A Brasil",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Bo"
+  },
+  {
+    "id": "club-brugge",
+    "name": "Club Brugge",
+    "country": "Belgium",
+    "league": "Belgian Pro League",
+    "overall": 76,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Cl"
+  },
+  {
+    "id": "las-palmas",
+    "name": "Las Palmas",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=La"
+  },
+  {
+    "id": "getafe",
+    "name": "Getafe",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ge"
+  },
+  {
+    "id": "mallorca",
+    "name": "Mallorca",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ma"
+  },
+  {
+    "id": "augsburg",
+    "name": "FC Augsburg",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=FC"
+  },
+  {
+    "id": "genoa",
+    "name": "Genoa",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ge"
+  },
+  {
+    "id": "udinese",
+    "name": "Udinese",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ud"
+  },
+  {
+    "id": "como",
+    "name": "Como",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Co"
+  },
+  {
+    "id": "nantes",
+    "name": "FC Nantes",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=FC"
+  },
+  {
+    "id": "toulouse",
+    "name": "Toulouse FC",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=To"
+  },
+  {
+    "id": "twente",
+    "name": "FC Twente",
+    "country": "Netherlands",
+    "league": "Eredivisie",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=FC"
+  },
+  {
+    "id": "nycfc",
+    "name": "NY City FC",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=NY"
+  },
+  {
+    "id": "columbus",
+    "name": "Columbus Crew",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Co"
+  },
+  {
+    "id": "santos",
+    "name": "Santos",
+    "country": "Brazil",
+    "league": "Serie A Brasil",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Sa"
+  },
+  {
+    "id": "gremio",
+    "name": "Grêmio",
+    "country": "Brazil",
+    "league": "Serie A Brasil",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Gr"
+  },
+  {
+    "id": "internacional",
+    "name": "Internacional",
+    "country": "Brazil",
+    "league": "Serie A Brasil",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=In"
+  },
+  {
+    "id": "racing",
+    "name": "Racing Club",
+    "country": "Argentina",
+    "league": "LPF",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ra"
+  },
+  {
+    "id": "besiktas",
+    "name": "Beşiktaş",
+    "country": "Turkey",
+    "league": "Super Lig",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Be"
+  },
+  {
+    "id": "anderlecht",
+    "name": "Anderlecht",
+    "country": "Belgium",
+    "league": "Belgian Pro League",
+    "overall": 75,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=An"
+  },
+  {
+    "id": "leicester",
+    "name": "Leicester City",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Le"
+  },
+  {
+    "id": "leganes",
+    "name": "Leganés",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Le"
+  },
+  {
+    "id": "espanyol",
+    "name": "Espanyol",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Es"
+  },
+  {
+    "id": "lecce",
+    "name": "Lecce",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Le"
+  },
+  {
+    "id": "cagliari",
+    "name": "Cagliari",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ca"
+  },
+  {
+    "id": "empoli",
+    "name": "Empoli",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Em"
+  },
+  {
+    "id": "parma",
+    "name": "Parma",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Pa"
+  },
+  {
+    "id": "montpellier",
+    "name": "Montpellier",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Mo"
+  },
+  {
+    "id": "le-havre",
+    "name": "Le Havre",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Le"
+  },
+  {
+    "id": "vitoria",
+    "name": "Vitória SC",
+    "country": "Portugal",
+    "league": "Liga Portugal",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Vi"
+  },
+  {
+    "id": "utrecht",
+    "name": "FC Utrecht",
+    "country": "Netherlands",
+    "league": "Eredivisie",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=FC"
+  },
+  {
+    "id": "al-qadsiah",
+    "name": "Al Qadsiah",
+    "country": "Saudi Arabia",
+    "league": "ROSHN",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Al"
+  },
+  {
+    "id": "red-bulls",
+    "name": "NY Red Bulls",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=NY"
+  },
+  {
+    "id": "portland",
+    "name": "Portland Timbers",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Po"
+  },
+  {
+    "id": "philadelphia",
+    "name": "Philadelphia Union",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ph"
+  },
+  {
+    "id": "orlando",
+    "name": "Orlando City",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Or"
+  },
+  {
+    "id": "nashville",
+    "name": "Nashville SC",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Na"
+  },
+  {
+    "id": "austin",
+    "name": "Austin FC",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Au"
+  },
+  {
+    "id": "salt-lake",
+    "name": "Real Salt Lake",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Re"
+  },
+  {
+    "id": "athletico-pr",
+    "name": "Athletico-PR",
+    "country": "Brazil",
+    "league": "Serie A Brasil",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=At"
+  },
+  {
+    "id": "vasco",
+    "name": "Vasco da Gama",
+    "country": "Brazil",
+    "league": "Serie A Brasil",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Va"
+  },
+  {
+    "id": "independiente",
+    "name": "Independiente",
+    "country": "Argentina",
+    "league": "LPF",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=In"
+  },
+  {
+    "id": "estudiantes",
+    "name": "Estudiantes",
+    "country": "Argentina",
+    "league": "LPF",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Es"
+  },
+  {
+    "id": "union-sg",
+    "name": "Union Saint-Gilloise",
+    "country": "Belgium",
+    "league": "Belgian Pro League",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Un"
+  },
+  {
+    "id": "gent",
+    "name": "Gent",
+    "country": "Belgium",
+    "league": "Belgian Pro League",
+    "overall": 74,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ge"
+  },
+  {
+    "id": "ipswich",
+    "name": "Ipswich Town",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ip"
+  },
+  {
+    "id": "southampton",
+    "name": "Southampton",
+    "country": "England",
+    "league": "Premier League",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=So"
+  },
+  {
+    "id": "alaves",
+    "name": "Alavés",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Al"
+  },
+  {
+    "id": "bochum",
+    "name": "VfL Bochum",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Vf"
+  },
+  {
+    "id": "st-pauli",
+    "name": "FC St. Pauli",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=FC"
+  },
+  {
+    "id": "verona",
+    "name": "Hellas Verona",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=He"
+  },
+  {
+    "id": "venezia",
+    "name": "Venezia",
+    "country": "Italy",
+    "league": "Serie A",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ve"
+  },
+  {
+    "id": "saint-etienne",
+    "name": "Saint-Étienne",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Sa"
+  },
+  {
+    "id": "angers",
+    "name": "Angers",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=An"
+  },
+  {
+    "id": "auxerre",
+    "name": "AJ Auxerre",
+    "country": "France",
+    "league": "Ligue 1",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=AJ"
+  },
+  {
+    "id": "al-shabab",
+    "name": "Al Shabab",
+    "country": "Saudi Arabia",
+    "league": "ROSHN",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Al"
+  },
+  {
+    "id": "montreal",
+    "name": "CF Montréal",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=CF"
+  },
+  {
+    "id": "toronto",
+    "name": "Toronto FC",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=To"
+  },
+  {
+    "id": "new-england",
+    "name": "New England Rev",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ne"
+  },
+  {
+    "id": "sporting-kc",
+    "name": "Sporting KC",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Sp"
+  },
+  {
+    "id": "charlotte",
+    "name": "Charlotte FC",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ch"
+  },
+  {
+    "id": "san-lorenzo",
+    "name": "San Lorenzo",
+    "country": "Argentina",
+    "league": "LPF",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Sa"
+  },
+  {
+    "id": "velez",
+    "name": "Vélez Sársfield",
+    "country": "Argentina",
+    "league": "LPF",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=V%C3%A9"
+  },
+  {
+    "id": "talleres",
+    "name": "Talleres",
+    "country": "Argentina",
+    "league": "LPF",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ta"
+  },
+  {
+    "id": "trabzonspor",
+    "name": "Trabzonspor",
+    "country": "Turkey",
+    "league": "Super Lig",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Tr"
+  },
+  {
+    "id": "hearts",
+    "name": "Hearts",
+    "country": "Scotland",
+    "league": "Scottish Premiership",
+    "overall": 73,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=He"
+  },
+  {
+    "id": "valladolid",
+    "name": "Real Valladolid",
+    "country": "Spain",
+    "league": "LALIGA",
+    "overall": 72,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Re"
+  },
+  {
+    "id": "kiel",
+    "name": "Holstein Kiel",
+    "country": "Germany",
+    "league": "Bundesliga",
+    "overall": 72,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ho"
+  },
+  {
+    "id": "famalicao",
+    "name": "Famalicão",
+    "country": "Portugal",
+    "league": "Liga Portugal",
+    "overall": 72,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Fa"
+  },
+  {
+    "id": "boavista",
+    "name": "Boavista",
+    "country": "Portugal",
+    "league": "Liga Portugal",
+    "overall": 72,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Bo"
+  },
+  {
+    "id": "rio-ave",
+    "name": "Rio Ave",
+    "country": "Portugal",
+    "league": "Liga Portugal",
+    "overall": 72,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ri"
+  },
+  {
+    "id": "groningen",
+    "name": "FC Groningen",
+    "country": "Netherlands",
+    "league": "Eredivisie",
+    "overall": 72,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=FC"
+  },
+  {
+    "id": "sparta-rotterdam",
+    "name": "Sparta Rotterdam",
+    "country": "Netherlands",
+    "league": "Eredivisie",
+    "overall": 72,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Sp"
+  },
+  {
+    "id": "al-fateh",
+    "name": "Al Fateh",
+    "country": "Saudi Arabia",
+    "league": "ROSHN",
+    "overall": 72,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Al"
+  },
+  {
+    "id": "dc-united",
+    "name": "D.C. United",
+    "country": "USA",
+    "league": "MLS",
+    "overall": 72,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=D."
+  },
+  {
+    "id": "basaksehir",
+    "name": "Başakşehir",
+    "country": "Turkey",
+    "league": "Super Lig",
+    "overall": 72,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ba"
+  },
+  {
+    "id": "hibernian",
+    "name": "Hibernian",
+    "country": "Scotland",
+    "league": "Scottish Premiership",
+    "overall": 72,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Hi"
+  },
+  {
+    "id": "estoril",
+    "name": "Estoril",
+    "country": "Portugal",
+    "league": "Liga Portugal",
+    "overall": 71,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Es"
+  },
+  {
+    "id": "casa-pia",
+    "name": "Casa Pia",
+    "country": "Portugal",
+    "league": "Liga Portugal",
+    "overall": 71,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ca"
+  },
+  {
+    "id": "al-fayha",
+    "name": "Al Fayha",
+    "country": "Saudi Arabia",
+    "league": "ROSHN",
+    "overall": 71,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Al"
+  },
+  {
+    "id": "adana",
+    "name": "Adana Demirspor",
+    "country": "Turkey",
+    "league": "Super Lig",
+    "overall": 71,
+    "logo": "https://ui-avatars.com/api/?background=1a2235&color=60efff&bold=true&name=Ad"
+  }
 ]
