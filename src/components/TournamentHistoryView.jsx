@@ -4,20 +4,24 @@ import { Trophy, ArrowLeft } from 'lucide-react';
 import TeamLogo from './TeamLogo';
 import TournamentGroups from './TournamentGroups';
 import TournamentBracket from './TournamentBracket';
+import { supabase } from '../lib/supabase';
 
 const TournamentHistoryView = () => {
   const { id } = useParams();
   const [tournament, setTournament] = useState(null);
 
   useEffect(() => {
-    const savedHistory = localStorage.getItem('tournamentsHistory');
-    if (savedHistory) {
-      const historyArr = JSON.parse(savedHistory);
-      const found = historyArr.find(item => item.id === id);
-      if (found) {
-        setTournament(found);
+    const loadTournament = async () => {
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (!error && data) {
+        setTournament(data);
       }
-    }
+    };
+    loadTournament();
   }, [id]);
 
   if (!tournament) {
@@ -92,24 +96,24 @@ const TournamentHistoryView = () => {
           Tabelas e Confrontos Oficiais
         </h3>
 
-        {tournament.config.format === 'groups' && tournament.groupsData && (
+        {tournament.config.format === 'groups' && tournament.groups_data && (
           <div style={{ marginBottom: '4rem' }}>
             <h4 style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Fase de Grupos</h4>
             <TournamentGroups 
               readOnly={true}
-              historyGroups={tournament.groupsData}
-              historyMatches={tournament.groupMatches}
-              players={tournament.players} // Fallback se necessário
+              historyGroups={tournament.groups_data}
+              historyMatches={tournament.group_matches}
+              players={tournament.players}
             />
           </div>
         )}
 
-        {tournament.bracketMatches && tournament.bracketMatches.length > 0 ? (
+        {tournament.bracket_matches && tournament.bracket_matches.length > 0 ? (
           <div>
             <h4 style={{ color: 'var(--text-secondary)', marginBottom: '1rem', textAlign: 'center' }}>Fase Eliminatória</h4>
             <TournamentBracket 
               readOnly={true}
-              historyMatches={tournament.bracketMatches}
+              historyMatches={tournament.bracket_matches}
               historyPlayers={tournament.players}
             />
           </div>

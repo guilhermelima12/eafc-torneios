@@ -52,7 +52,7 @@ const TeamPoolSelection = () => {
     localStorage.setItem('tournamentDraftPool', JSON.stringify(pool));
     
     // Proceed to player registration
-    navigate('/players');
+    navigate('/draft');
   };
 
   return (

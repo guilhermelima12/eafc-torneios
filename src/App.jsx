@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Link, NavLink } from 'react-router-dom';
-import { Trophy, Users, Shield } from 'lucide-react';
+import { Trophy, Users, Shield, Trash2 } from 'lucide-react';
 import TournamentSetup from './components/TournamentSetup';
 import PlayerRegistration from './components/PlayerRegistration';
 import TeamLogo from './components/TeamLogo';
@@ -8,6 +8,8 @@ import TournamentBracket from './components/TournamentBracket';
 import TournamentGroups from './components/TournamentGroups';
 import TeamPoolSelection from './components/TeamPoolSelection';
 import TournamentHistoryView from './components/TournamentHistoryView';
+import PlayersManager from './components/PlayersManager';
+import { supabase } from './lib/supabase';
 
 const Dashboard = () => {
   const [config, setConfig] = useState(null);
@@ -18,21 +20,27 @@ const Dashboard = () => {
   useEffect(() => {
     const savedConfig = localStorage.getItem('tournamentConfig');
     const savedPlayers = localStorage.getItem('tournamentPlayers');
-    const savedHistory = localStorage.getItem('tournamentsHistory');
-    
-    if (savedHistory) {
-      setHistory(JSON.parse(savedHistory));
-    }
 
     if (savedConfig && savedPlayers) {
       const cfg = JSON.parse(savedConfig);
       setConfig(cfg);
       setPlayers(JSON.parse(savedPlayers));
-      
       if (cfg.format === 'groups' && !localStorage.getItem('groupStageFinished')) {
         setPhase('groups');
       }
     }
+
+    // Load history from Supabase
+    const loadHistory = async () => {
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (!error && data) {
+        setHistory(data);
+      }
+    };
+    loadHistory();
   }, []);
 
   const handleFinishGroups = (qualifiedPlayers) => {
@@ -49,7 +57,15 @@ const Dashboard = () => {
     window.location.reload();
   };
 
-  const handleEndTournament = () => {
+  const handleDeleteTournament = async (id) => {
+    if (!window.confirm('Tem certeza que deseja apagar este torneio do histórico? Esta ação não pode ser desfeita.')) return;
+    const { error } = await supabase.from('tournaments').delete().eq('id', id);
+    if (!error) {
+      setHistory(history.filter(h => h.id !== id));
+    }
+  };
+
+  const handleEndTournament = async () => {
     const championStr = localStorage.getItem('tournamentChampion');
     const champion = championStr ? JSON.parse(championStr) : null;
     
@@ -58,22 +74,79 @@ const Dashboard = () => {
         return;
       }
     } else {
-      // Save to history
+      // Save to Supabase
       const historyItem = {
         id: Date.now().toString(),
         date: new Date().toLocaleDateString(),
         config: config,
         champion: champion,
         players: JSON.parse(localStorage.getItem('tournamentPlayers')),
-        groupsData: JSON.parse(localStorage.getItem('tournamentGroups')),
-        groupMatches: JSON.parse(localStorage.getItem('tournamentGroupMatches')),
-        bracketMatches: JSON.parse(localStorage.getItem('tournamentMatches'))
+        groups_data: JSON.parse(localStorage.getItem('tournamentGroups')),
+        group_matches: JSON.parse(localStorage.getItem('tournamentGroupMatches')),
+        bracket_matches: JSON.parse(localStorage.getItem('tournamentMatches'))
       };
-      const newHistory = [historyItem, ...history];
-      localStorage.setItem('tournamentsHistory', JSON.stringify(newHistory));
+      
+      const { error } = await supabase.from('tournaments').insert([historyItem]);
+      if (error) {
+        alert('Erro ao salvar no banco de dados: ' + error.message);
+        return;
+      }
+
+      // Auto-update seeds based on final standings
+      const tournamentPlayers = JSON.parse(localStorage.getItem('tournamentPlayers') || '[]');
+      const bracketMatches = JSON.parse(localStorage.getItem('tournamentMatches') || '[]');
+
+      // Build final standings from bracket (by elimination round)
+      if (bracketMatches.length > 0 && tournamentPlayers.length > 0) {
+        // Group matches by round
+        const rounds = {};
+        bracketMatches.forEach(m => {
+          if (!rounds[m.round]) rounds[m.round] = [];
+          rounds[m.round].push(m);
+        });
+        const sortedRounds = Object.keys(rounds).sort((a, b) => parseInt(b) - parseInt(a));
+
+        // Build standings: champion first, then runner-up, then by round eliminated
+        const standings = [];
+        const added = new Set();
+
+        sortedRounds.forEach((round, roundIdx) => {
+          rounds[round].forEach(match => {
+            const winner = match.score1 > match.score2 ? match.player1 : match.score2 > match.score1 ? match.player2 : null;
+            const loser = match.score1 > match.score2 ? match.player2 : match.score2 > match.score1 ? match.player1 : null;
+
+            if (roundIdx === 0 && winner && !added.has(winner?.name)) {
+              standings.push(winner);
+              added.add(winner?.name);
+            }
+            if (loser && !added.has(loser?.name)) {
+              standings.push(loser);
+              added.add(loser?.name);
+            }
+          });
+        });
+
+        // Add remaining players not in bracket (group stage only)
+        tournamentPlayers.forEach(p => {
+          if (!added.has(p.name)) standings.push(p);
+        });
+
+        // Update seeds in Supabase for each registered player
+        const { data: dbPlayers } = await supabase.from('players').select('id, name');
+        if (dbPlayers) {
+          const updatePromises = standings.map((player, idx) => {
+            const dbPlayer = dbPlayers.find(db => db.name === player?.name);
+            if (dbPlayer) {
+              return supabase.from('players').update({ seed: idx + 1 }).eq('id', dbPlayer.id);
+            }
+            return Promise.resolve();
+          });
+          await Promise.all(updatePromises);
+        }
+      }
     }
 
-    // Clear all active tournament data
+    // Clear active tournament
     localStorage.removeItem('tournamentConfig');
     localStorage.removeItem('tournamentPlayers');
     localStorage.removeItem('tournamentMatches');
@@ -161,9 +234,22 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <Link to={`/history/${item.id}`} className="btn-secondary" style={{ textDecoration: 'none', textAlign: 'center', fontSize: '0.9rem', padding: '10px' }}>
-                  Ver Detalhes
-                </Link>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <Link to={`/history/${item.id}`} className="btn-secondary" style={{ textDecoration: 'none', textAlign: 'center', fontSize: '0.9rem', padding: '10px', flex: 1 }}>
+                    Ver Detalhes
+                  </Link>
+                  <button
+                    onClick={() => handleDeleteTournament(item.id)}
+                    style={{
+                      background: 'transparent', border: '1px solid rgba(255,75,75,0.3)',
+                      color: '#ff4b4b', cursor: 'pointer', padding: '10px 14px',
+                      borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px',
+                      fontFamily: 'Outfit', fontSize: '0.9rem', transition: 'all 0.2s'
+                    }}
+                  >
+                    <Trash2 size={16} /> Deletar
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -242,7 +328,8 @@ const App = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/setup" element={<TournamentSetup />} />
             <Route path="/pool" element={<TeamPoolSelection />} />
-            <Route path="/players" element={<PlayerRegistration />} />
+            <Route path="/draft" element={<PlayerRegistration />} />
+            <Route path="/players" element={<PlayersManager />} />
             <Route path="/history/:id" element={<TournamentHistoryView />} />
           </Routes>
         </main>
