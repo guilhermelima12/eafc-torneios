@@ -41,7 +41,7 @@ const generateGroupsAndMatches = (players) => {
   return { groups, matches };
 };
 
-const TournamentGroups = ({ players, onFinishGroups, readOnly = false, historyGroups = null, historyMatches = null }) => {
+const TournamentGroups = ({ players, onFinishGroups, readOnly = false, leagueOnly = false, historyGroups = null, historyMatches = null }) => {
   const [groupsData, setGroupsData] = useState([]);
   const [matches, setMatches] = useState([]);
 
@@ -253,9 +253,17 @@ const TournamentGroups = ({ players, onFinishGroups, readOnly = false, historyGr
 
       {isAllMatchesFinished && !readOnly && (
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem', animation: 'fadeIn 0.5s ease' }}>
-          <button onClick={handleAdvance} className="btn-primary" style={{ padding: '16px 32px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            Avançar para Mata-Mata <CheckCircle2 size={24} />
-          </button>
+          {leagueOnly ? (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏆</div>
+              <h3 style={{ color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>Liga Encerrada!</h3>
+              <p style={{ color: 'var(--text-secondary)' }}>Clique em "Encerrar / Salvar no Histórico" para salvar os resultados.</p>
+            </div>
+          ) : (
+            <button onClick={handleAdvance} className="btn-primary" style={{ padding: '16px 32px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              Avançar para Mata-Mata <CheckCircle2 size={24} />
+            </button>
+          )}
         </div>
       )}
 

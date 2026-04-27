@@ -27,6 +27,8 @@ const Dashboard = () => {
       setPlayers(JSON.parse(savedPlayers));
       if (cfg.format === 'groups' && !localStorage.getItem('groupStageFinished')) {
         setPhase('groups');
+      } else if (cfg.format === 'league') {
+        setPhase('league');
       }
     }
 
@@ -67,8 +69,16 @@ const Dashboard = () => {
 
   const handleEndTournament = async () => {
     const championStr = localStorage.getItem('tournamentChampion');
-    const champion = championStr ? JSON.parse(championStr) : null;
-    
+    let champion = championStr ? JSON.parse(championStr) : null;
+
+    // For league format, derive champion from group standings (1st place)
+    if (!champion && config?.format === 'league') {
+      const groupsData = JSON.parse(localStorage.getItem('tournamentGroups') || 'null');
+      if (groupsData && groupsData[0] && groupsData[0].length > 0) {
+        champion = groupsData[0][0]; // 1st place in the single group
+      }
+    }
+
     if (!champion) {
       if (!window.confirm('Atenção: O torneio atual ainda NÃO tem um campeão definido. Quer mesmo apagar sem salvar no histórico?')) {
         return;
@@ -215,6 +225,8 @@ const Dashboard = () => {
             <div style={{ marginTop: '2rem' }}>
               {phase === 'groups' ? (
                 <TournamentGroups players={players} onFinishGroups={handleFinishGroups} />
+              ) : phase === 'league' ? (
+                <TournamentGroups players={players} onFinishGroups={handleFinishGroups} leagueOnly={true} />
               ) : (
                 <TournamentBracket />
               )}
