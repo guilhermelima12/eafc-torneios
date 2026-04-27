@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, NavLink } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link, NavLink } from 'react-router-dom';
 import { Trophy, Users, Shield } from 'lucide-react';
 import TournamentSetup from './components/TournamentSetup';
 import PlayerRegistration from './components/PlayerRegistration';
@@ -176,7 +176,7 @@ const Dashboard = () => {
 
 const App = () => {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         
         {/* Header Navigation */}
@@ -247,7 +247,7 @@ const App = () => {
           </Routes>
         </main>
       </div>
-    </BrowserRouter>
+    </HashRouter>
   );
 };
 
