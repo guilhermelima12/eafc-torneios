@@ -102,78 +102,94 @@ const Dashboard = () => {
         return;
       }
 
-      // ─── Auto-update seeds based on final standings ───────────────────
-      const bracketMatches = JSON.parse(localStorage.getItem('tournamentMatches') || '[]');
-      const qualifiedPlayers = JSON.parse(localStorage.getItem('tournamentPlayers') || '[]');
-      const groupsData = JSON.parse(localStorage.getItem('tournamentGroups') || 'null');
-
-      const standings = [];
-      const added = new Set();
-
-      // 1) Process bracket matches from highest round (Final) down to lowest
-      if (bracketMatches.length > 0) {
-        const finishedMatches = bracketMatches
-          .filter(m => m.winner)
-          .sort((a, b) => b.round - a.round);
-
-        finishedMatches.forEach(match => {
-          const winner = match.winner;
-          // Loser is whichever of p1/p2 is NOT the winner
-          const loser = match.p1?.id === winner?.id ? match.p2 : match.p1;
-
-          if (winner && !added.has(winner.name)) {
-            standings.push(winner);
-            added.add(winner.name);
-          }
-          if (loser && !added.has(loser.name)) {
-            standings.push(loser);
-            added.add(loser.name);
-          }
-        });
-      }
-
-      // 2) Add qualified players who never appeared in bracket (edge case)
-      qualifiedPlayers.forEach(p => {
-        if (!added.has(p.name)) {
-          standings.push(p);
-          added.add(p.name);
+      // ─── Recalculate seeds: average finish position across ALL tournaments ───
+      // Helper: extract ordered standings from any tournament record
+      const getTournamentStandings = (t) => {
+        const fmt = t.config?.format;
+        // League: standings are groups_data[0] (already sorted by points)
+        if (fmt === 'league') {
+          return (t.groups_data?.[0] || t.players || []).filter(Boolean);
         }
-      });
 
-      // 3) Add players eliminated in the group stage (ranked by group position)
-      if (groupsData) {
-        const groupEliminated = [];
-        groupsData.forEach(group => {
-          group.forEach((p, idx) => {
-            if (!added.has(p.name)) {
-              groupEliminated.push({ player: p, groupRank: idx });
-            }
+        // Knockout / Groups+Knockout: derive from bracket results
+        const bMatches = t.bracket_matches || [];
+        const qualified = t.players || [];
+        const gData = t.groups_data;
+        const standings = [];
+        const added = new Set();
+
+        // 1) Process bracket from Final down to first round
+        if (bMatches.length > 0) {
+          bMatches
+            .filter(m => m.winner)
+            .sort((a, b) => b.round - a.round)
+            .forEach(match => {
+              const winner = match.winner;
+              const loser = match.p1?.id === winner?.id ? match.p2 : match.p1;
+              if (winner?.name && !added.has(winner.name)) { standings.push(winner); added.add(winner.name); }
+              if (loser?.name && !added.has(loser.name)) { standings.push(loser); added.add(loser.name); }
+            });
+        }
+
+        // 2) Bracket players not yet in list
+        qualified.forEach(p => {
+          if (p?.name && !added.has(p.name)) { standings.push(p); added.add(p.name); }
+        });
+
+        // 3) Group-eliminated players ordered by group rank
+        if (gData) {
+          const groupElim = [];
+          gData.forEach(group => {
+            group.forEach((p, idx) => {
+              if (p?.name && !added.has(p.name)) groupElim.push({ player: p, rank: idx });
+            });
+          });
+          groupElim.sort((a, b) => a.rank - b.rank);
+          groupElim.forEach(({ player }) => {
+            if (!added.has(player.name)) { standings.push(player); added.add(player.name); }
+          });
+        }
+
+        return standings;
+      };
+
+      // Load all tournaments (including the one just inserted)
+      const { data: allTournaments } = await supabase.from('tournaments').select('*');
+
+      // Accumulate position totals per player
+      const posMap = {}; // name -> { total, count }
+      if (allTournaments) {
+        allTournaments.forEach(t => {
+          const stds = getTournamentStandings(t);
+          stds.forEach((player, idx) => {
+            if (!player?.name) return;
+            if (!posMap[player.name]) posMap[player.name] = { total: 0, count: 0 };
+            posMap[player.name].total += (idx + 1); // 1-based position
+            posMap[player.name].count += 1;
           });
         });
-        // Sort: lower group rank = better position → goes first
-        groupEliminated.sort((a, b) => a.groupRank - b.groupRank);
-        groupEliminated.forEach(({ player }) => {
-          if (!added.has(player.name)) {
-            standings.push(player);
-            added.add(player.name);
-          }
-        });
       }
 
-      // 4) Write the new seeds to Supabase (position in standings = new seed)
-      if (standings.length > 0) {
+      // Sort by average position ascending (best avg = lowest seed number)
+      const ranked = Object.entries(posMap)
+        .map(([name, { total, count }]) => ({ name, avg: total / count }))
+        .sort((a, b) => a.avg - b.avg);
+
+      // Write new seeds
+      if (ranked.length > 0) {
         const { data: dbPlayers } = await supabase.from('players').select('id, name');
         if (dbPlayers) {
-          const updatePromises = standings.map((player, idx) => {
-            const dbPlayer = dbPlayers.find(db => db.name === player?.name);
+          const seedUpdates = ranked.map((entry, idx) => {
+            const dbPlayer = dbPlayers.find(db => db.name === entry.name);
             if (dbPlayer) {
               return supabase.from('players').update({ seed: idx + 1 }).eq('id', dbPlayer.id);
             }
             return Promise.resolve();
           });
-          await Promise.all(updatePromises);
+          await Promise.all(seedUpdates);
         }
       }
+
     }
 
     // Clear active tournament
