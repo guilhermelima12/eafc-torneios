@@ -289,7 +289,11 @@ const Dashboard = () => {
                 <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
                   {item.date} • {item.config.participants} Jogadores
                 </div>
-                <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', color: 'white' }}>{item.config.name}</h3>
+                <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', color: 'white' }}>{item.config.name}</h3>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '2px 10px', borderRadius: '20px', marginBottom: '1rem', display: 'inline-block', background: 'rgba(96,239,255,0.1)', color: 'var(--accent-secondary)', border: '1px solid rgba(96,239,255,0.2)', letterSpacing: '0.5px' }}>
+                  {item.config.format === 'knockout' ? 'Mata-Mata' : item.config.format === 'league' ? 'Pontos Corridos' : 'Grupos + Eliminatórias'}
+                  {item.config.legsMode === 'double' ? ' • Ida e Volta' : ''}
+                </span>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem', flex: 1 }}>
                   <TeamLogo team={item.champion?.team} size={50} />

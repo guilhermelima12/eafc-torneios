@@ -216,7 +216,25 @@ const TournamentHistoryView = () => {
   }
 
   const handleSaveConfig = (newConfig) => {
+    const oldFmt = tournament.config.format;
+    const newFmt = newConfig.format;
     setTournament(t => ({ ...t, config: newConfig }));
+
+    // If format changed, reset bracket so edit mode generates fresh bracket
+    if (oldFmt !== newFmt) {
+      if (newFmt !== 'league') {
+        // Changing TO or WITHIN knockout/groups: clear stale bracket
+        setLocalBracketMatches(null);
+        pendingPayload.current = {};
+      }
+      if (newFmt === 'league') {
+        // Changing TO league: clear bracket entirely
+        setLocalBracketMatches(null);
+        pendingPayload.current = {};
+      }
+      setEditMode(false); // Exit edit mode on format change to avoid stale state
+    }
+
     setShowEdit(false);
   };
 
