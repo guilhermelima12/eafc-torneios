@@ -39,6 +39,7 @@ const generateGroupsAndMatches = (players, legsMode = 'single', forceOneGroup = 
 };
 
 const TournamentGroups = ({
+  onDataChange = null, // callback(groups, matches) for history edit mode
   players, onFinishGroups,
   readOnly = false, leagueOnly = false,
   legsMode = 'single',
@@ -105,14 +106,22 @@ const TournamentGroups = ({
     });
 
     setGroupsData(newGroupsData);
-    localStorage.setItem('tournamentGroups', JSON.stringify(newGroupsData));
+    if (onDataChange) {
+      onDataChange(newGroupsData, matches);
+    } else {
+      localStorage.setItem('tournamentGroups', JSON.stringify(newGroupsData));
+    }
   };
 
   const updateMatchScore = (matchId, s1, s2) => {
     if (readOnly) return;
     const updated = matches.map(m => m.id === matchId ? { ...m, score1: s1, score2: s2 } : m);
     setMatches(updated);
-    localStorage.setItem('tournamentGroupMatches', JSON.stringify(updated));
+    if (onDataChange) {
+      onDataChange(groupsData, updated);
+    } else {
+      localStorage.setItem('tournamentGroupMatches', JSON.stringify(updated));
+    }
     recalculateStandings(updated, groupsData);
   };
 

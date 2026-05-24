@@ -101,23 +101,21 @@ const MatchCard = ({ match, onUpdateScore, readOnly }) => {
   );
 };
 
-const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPlayers = null }) => {
+const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPlayers = null, onDataChange = null }) => {
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState([]);
   const [champion, setChampion] = useState(null);
 
   useEffect(() => {
-    if (readOnly) {
-      if (historyPlayers) setPlayers(historyPlayers);
-      if (historyMatches) {
-        setMatches(historyMatches);
-        const finalMatch = historyMatches.reduce((max, m) => m.round > max.round ? m : max, historyMatches[0]);
-        if (finalMatch && finalMatch.winner) {
-          setChampion(finalMatch.winner);
-        }
-      }
-      return;
+    if (historyPlayers) setPlayers(historyPlayers);
+    if (historyMatches) {
+      setMatches(historyMatches);
+      const finalMatch = historyMatches.reduce((max, m) => m.round > max.round ? m : max, historyMatches[0]);
+      if (finalMatch && finalMatch.winner) setChampion(finalMatch.winner);
     }
+    if (readOnly) return;
+    // history edit mode: data already loaded above, no localStorage needed
+    if (historyPlayers) return;
 
     const savedPlayers = localStorage.getItem('tournamentPlayers');
     const savedMatches = localStorage.getItem('tournamentMatches');
@@ -167,7 +165,11 @@ const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPla
 
     setMatches(updatedMatches);
 
-    localStorage.setItem('tournamentMatches', JSON.stringify(updatedMatches));
+    if (onDataChange) {
+      onDataChange(updatedMatches);
+    } else {
+      localStorage.setItem('tournamentMatches', JSON.stringify(updatedMatches));
+    }
   };
 
   const processAdvancement = (allMatches, finishedMatch) => {
