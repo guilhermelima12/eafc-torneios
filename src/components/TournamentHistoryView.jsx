@@ -143,6 +143,20 @@ const TournamentHistoryView = () => {
     debouncedSave({ bracket_matches: bracketMatches, ...(champion ? { champion } : {}) });
   }, [debouncedSave]);
 
+  // MUST be before early return — hooks cannot be called conditionally
+  const qualifiedPlayers = React.useMemo(() => {
+    if (!tournament) return [];
+    const fmt = tournament.config.format;
+    if (fmt === 'knockout') return tournament.players || [];
+    if (!localGroups || localGroups.length === 0) return tournament.players || [];
+    const qualified = [];
+    localGroups.forEach(group => {
+      const spots = (localGroups.length === 1 && group.length >= 4) ? 4 : 2;
+      for (let i = 0; i < spots && i < group.length; i++) qualified.push(group[i]);
+    });
+    return qualified.length > 0 ? qualified : (tournament.players || []);
+  }, [tournament, localGroups]);
+
   if (!tournament) {
     return (
       <div style={{ textAlign: 'center', marginTop: '4rem' }}>
@@ -160,18 +174,6 @@ const TournamentHistoryView = () => {
   const fmt = tournament.config.format;
   const formatLabel = fmt === 'knockout' ? 'Mata-Mata' : fmt === 'league' ? 'Pontos Corridos' : 'Grupos + Eliminatórias';
   const legsLabel = tournament.config.legsMode === 'double' ? ' • Ida e Volta' : '';
-
-  // Derive qualified players for bracket from group standings
-  const qualifiedPlayers = React.useMemo(() => {
-    if (fmt === 'knockout') return tournament.players || [];
-    if (!localGroups || localGroups.length === 0) return tournament.players || [];
-    const qualified = [];
-    localGroups.forEach(group => {
-      const spots = (localGroups.length === 1 && group.length >= 4) ? 4 : 2;
-      for (let i = 0; i < spots && i < group.length; i++) qualified.push(group[i]);
-    });
-    return qualified.length > 0 ? qualified : (tournament.players || []);
-  }, [fmt, localGroups, tournament.players]);
 
   return (
     <div style={{ marginTop: '1rem', animation: 'fadeIn 0.5s ease' }}>
