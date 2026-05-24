@@ -2,8 +2,15 @@ import React, { useState, useEffect } from 'react';
 import TeamLogo from './TeamLogo';
 import { Trophy } from 'lucide-react';
 
-// Bracket Generation: works for 2–8 players
-const generateKnockoutMatches = (players) => {
+/* ── Layout Constants ─────────────────────────────────────────── */
+const CARD_W   = 216;   // match card width
+const CARD_H   = 88;    // match card height (must match actual rendered height)
+const BASE     = 120;   // slot height in round-0 (CARD_H + gap)
+const CONN_W   = 60;    // SVG connector column width
+const LABEL_H  = 28;    // height of the round label row
+
+/* ── Bracket Generation ───────────────────────────────────────── */
+export const generateKnockoutMatches = (players) => {
   const matches = [];
   const count = players.length;
 
@@ -16,105 +23,187 @@ const generateKnockoutMatches = (players) => {
     matches.push({ id: 1, round: 1, p1: players[0], p2: players[3], score1: null, score2: null, winner: null });
     matches.push({ id: 2, round: 1, p1: players[1], p2: players[2], score1: null, score2: null, winner: null });
   } else if (count >= 2) {
-    // Generic: pair up players sequentially, final = round 2
     let id = 1;
-    const roundMatches = [];
-    for (let i = 0; i + 1 < count; i += 2) {
-      roundMatches.push({ id: id++, round: 1, p1: players[i], p2: players[i + 1], score1: null, score2: null, winner: null });
-    }
-    // If odd number of players, last player gets a bye directly to final
-    if (count % 2 !== 0) {
-      roundMatches.push({ id: id++, round: 1, p1: players[count - 1], p2: null, score1: null, score2: null, winner: players[count - 1], isBye: true });
-    }
-    matches.push(...roundMatches);
-    // Add semi slots and final only if more than 2 base matches
-    if (roundMatches.length > 1) {
+    const r1 = [];
+    for (let i = 0; i + 1 < count; i += 2)
+      r1.push({ id: id++, round: 1, p1: players[i], p2: players[i + 1], score1: null, score2: null, winner: null });
+    if (count % 2 !== 0)
+      r1.push({ id: id++, round: 1, p1: players[count - 1], p2: null, score1: null, score2: null, winner: players[count - 1], isBye: true });
+    matches.push(...r1);
+    if (r1.length > 1)
       matches.push({ id: id++, round: 2, p1: null, p2: null, score1: null, score2: null, winner: null });
-    }
   }
 
   return matches;
 };
 
+/* ── Round definitions per player count ───────────────────────── */
+const getRounds = (playerCount) => {
+  if (playerCount === 8) return [
+    { label: 'Quartas de Final', ids: [1, 2, 3, 4] },
+    { label: 'Semifinal',         ids: [5, 6] },
+    { label: 'Final',             ids: [7] },
+  ];
+  if (playerCount === 4) return [
+    { label: 'Semifinal', ids: [1, 2] },
+    { label: 'Final',     ids: [3] },
+  ];
+  return [{ label: 'Final', ids: [1] }];
+};
+
+/* ── SVG Connector lines (between two adjacent rounds) ────────── */
+// fromCount  = number of matches in the LEFT round
+// fromRoundIdx = 0-based index of the LEFT round
+const BracketConnector = ({ fromCount, fromRoundIdx }) => {
+  const totalH = fromCount * BASE;
+  const pairsCount = Math.floor(fromCount / 2);
+  const stroke = 'rgba(255,255,255,0.18)';
+  const lines = [];
+
+  for (let i = 0; i < pairsCount; i++) {
+    const exp = Math.pow(2, fromRoundIdx);
+    const y1   = (2 * i + 0.5) * BASE * exp;   // center of match 2i in left round
+    const y2   = (2 * i + 1.5) * BASE * exp;   // center of match 2i+1 in left round
+    const yMid = (y1 + y2) / 2;                // center of match i in right round
+    const xM   = CONN_W / 2;
+
+    lines.push(
+      <g key={i}>
+        {/* Horizontal right from match 2i */}
+        <line x1={0}    y1={y1}   x2={xM}       y2={y1}   stroke={stroke} strokeWidth={1.5} strokeLinecap="round" />
+        {/* Vertical connector */}
+        <line x1={xM}   y1={y1}   x2={xM}       y2={y2}   stroke={stroke} strokeWidth={1.5} strokeLinecap="round" />
+        {/* Horizontal right from match 2i+1 */}
+        <line x1={0}    y1={y2}   x2={xM}       y2={y2}   stroke={stroke} strokeWidth={1.5} strokeLinecap="round" />
+        {/* Horizontal right to next match */}
+        <line x1={xM}   y1={yMid} x2={CONN_W}   y2={yMid} stroke={stroke} strokeWidth={1.5} strokeLinecap="round" />
+      </g>
+    );
+  }
+
+  return (
+    <svg
+      width={CONN_W}
+      height={totalH}
+      style={{ flexShrink: 0, display: 'block', overflow: 'visible' }}
+    >
+      {lines}
+    </svg>
+  );
+};
+
+/* ── Match Card ───────────────────────────────────────────────── */
 const MatchCard = ({ match, onUpdateScore, readOnly }) => {
   const [s1, setS1] = useState(match.score1 ?? '');
   const [s2, setS2] = useState(match.score2 ?? '');
   const [p1, setP1] = useState(match.pen1 ?? '');
   const [p2, setP2] = useState(match.pen2 ?? '');
 
-  const isTied = s1 !== '' && s2 !== '' && parseInt(s1) === parseInt(s2);
-  const isFinished = match.winner !== null;
+  // Sync when match prop changes (e.g., a winner advances and the next match updates)
+  useEffect(() => {
+    setS1(match.score1 ?? '');
+    setS2(match.score2 ?? '');
+    setP1(match.pen1 ?? '');
+    setP2(match.pen2 ?? '');
+  }, [match.score1, match.score2, match.pen1, match.pen2]);
 
-  const handleSave = (ns1 = s1, ns2 = s2, np1 = p1, np2 = p2) => {
+  const isTied    = s1 !== '' && s2 !== '' && parseInt(s1) === parseInt(s2);
+  const isFinished = match.winner !== null;
+  const w1 = isFinished && match.winner?.id === match.p1?.id;
+  const w2 = isFinished && match.winner?.id === match.p2?.id;
+
+  const save = (ns1 = s1, ns2 = s2, np1 = p1, np2 = p2) => {
     if (ns1 !== '' && ns2 !== '') {
-      onUpdateScore(match.id, parseInt(ns1), parseInt(ns2),
+      onUpdateScore?.(match.id, parseInt(ns1), parseInt(ns2),
         np1 !== '' ? parseInt(np1) : null,
         np2 !== '' ? parseInt(np2) : null);
     }
   };
 
+  const playerRow = (player, score, isWinner, val, setVal, penVal, side) => (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '8px 10px', gap: '8px',
+      borderRadius: side === 'top' ? '9px 9px 0 0' : '0 0 9px 9px',
+      background: isWinner ? 'rgba(0,255,135,0.07)' : 'transparent',
+      transition: 'background 0.2s',
+      borderLeft: isWinner ? '3px solid var(--accent-primary)' : '3px solid transparent',
+    }}>
+      {/* Left: logo + name */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flex: 1, minWidth: 0 }}>
+        <TeamLogo team={player?.team} size={20} />
+        <span style={{
+          fontWeight: isWinner ? 700 : 500,
+          color: player ? (isWinner ? 'var(--accent-primary)' : isFinished ? 'rgba(255,255,255,0.45)' : 'white') : 'var(--text-secondary)',
+          fontSize: '0.88rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          transition: 'color 0.2s'
+        }}>
+          {player?.name || (match.isBye ? '—' : 'TBD')}
+        </span>
+      </div>
+
+      {/* Right: score or input */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+        {penVal != null && isFinished && (
+          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>({penVal})</span>
+        )}
+        {!isFinished && player && !readOnly ? (
+          <input
+            type="number" min="0" placeholder="—" value={val}
+            onChange={e => setVal(e.target.value)}
+            onBlur={() => save()}
+            onKeyDown={e => e.key === 'Enter' && save()}
+            className="score-input"
+            style={{ width: '40px', textAlign: 'center', fontSize: '0.9rem', padding: '2px 4px' }}
+          />
+        ) : (
+          <span style={{
+            fontWeight: 700, fontSize: '1.25rem', minWidth: '22px', textAlign: 'right',
+            color: isWinner ? 'var(--accent-primary)' : isFinished ? 'rgba(255,255,255,0.35)' : 'var(--text-secondary)'
+          }}>
+            {score != null ? score : '—'}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div style={{
-      background: 'rgba(18,24,38,0.8)',
-      border: `1px solid ${isFinished ? 'var(--border-color)' : 'var(--accent-secondary)'}`,
-      borderRadius: '12px', padding: '16px', width: '260px', position: 'relative',
-      boxShadow: isFinished ? 'none' : '0 0 15px rgba(96,239,255,0.1)'
+      width: CARD_W,
+      border: `1px solid ${isFinished ? 'rgba(255,255,255,0.08)' : 'rgba(96,239,255,0.25)'}`,
+      borderRadius: '10px',
+      background: 'rgba(12,18,32,0.85)',
+      backdropFilter: 'blur(4px)',
+      overflow: 'hidden',
+      boxShadow: isFinished ? 'none' : '0 0 12px rgba(96,239,255,0.08)',
+      transition: 'border-color 0.3s, box-shadow 0.3s',
     }}>
-      {/* Player 1 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', opacity: isFinished && match.winner?.id !== match.p1?.id ? 0.5 : 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <TeamLogo team={match.p1?.team} size={24} />
-          <span style={{ fontWeight: 600 }}>{match.p1?.name || 'TBD'}</span>
-        </div>
-        {!isFinished && match.p1 && !readOnly ? (
-          <input type="number" min="0" placeholder="-" value={s1}
-            onChange={e => setS1(e.target.value)} onBlur={() => handleSave()} className="score-input" />
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {match.pen1 != null && <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({match.pen1})</span>}
-            <span style={{ fontWeight: 'bold', fontSize: '1.5rem', color: match.winner?.id === match.p1?.id ? 'var(--accent-primary)' : 'white' }}>{match.score1 ?? '-'}</span>
-          </div>
-        )}
-      </div>
+      {playerRow(match.p1, match.score1, w1, s1, setS1, match.pen1, 'top')}
 
-      <div style={{ height: '1px', background: 'var(--border-color)', margin: '12px 0' }} />
+      {/* Divider */}
+      <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '0 10px' }} />
 
-      {/* Player 2 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: isFinished && match.winner?.id !== match.p2?.id ? 0.5 : 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <TeamLogo team={match.p2?.team} size={24} />
-          <span style={{ fontWeight: 600 }}>{match.p2?.name || 'TBD'}</span>
-        </div>
-        {!isFinished && match.p2 && !readOnly ? (
-          <input type="number" min="0" placeholder="-" value={s2}
-            onChange={e => setS2(e.target.value)} onBlur={() => handleSave()} className="score-input" />
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {match.pen2 != null && <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({match.pen2})</span>}
-            <span style={{ fontWeight: 'bold', fontSize: '1.5rem', color: match.winner?.id === match.p2?.id ? 'var(--accent-primary)' : 'white' }}>{match.score2 ?? '-'}</span>
-          </div>
-        )}
-      </div>
+      {playerRow(match.p2, match.score2, w2, s2, setS2, match.pen2, 'bottom')}
 
-      {/* Penalty input — shown only when tied and not finished */}
+      {/* Penalty row */}
       {isTied && !isFinished && !readOnly && (
-        <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(251,191,36,0.08)', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.25)' }}>
-          <div style={{ fontSize: '0.75rem', color: '#fbbf24', marginBottom: '8px', textAlign: 'center', fontWeight: 600 }}>
-            ⚽ Empate — Pênaltis (opcional)
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
-            <input type="number" min="0" placeholder="-" value={p1}
-              onChange={e => setP1(e.target.value)} onBlur={() => handleSave()} className="score-input" />
-            <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>x</span>
-            <input type="number" min="0" placeholder="-" value={p2}
-              onChange={e => setP2(e.target.value)} onBlur={() => handleSave()} className="score-input" />
-          </div>
+        <div style={{ padding: '8px 10px', background: 'rgba(251,191,36,0.06)', borderTop: '1px solid rgba(251,191,36,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '0.72rem', color: '#fbbf24', fontWeight: 600, whiteSpace: 'nowrap' }}>Pênaltis</span>
+          <input type="number" min="0" placeholder="—" value={p1}
+            onChange={e => setP1(e.target.value)} onBlur={() => save()} className="score-input"
+            style={{ width: '38px', textAlign: 'center', fontSize: '0.85rem', padding: '2px 4px' }} />
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>×</span>
+          <input type="number" min="0" placeholder="—" value={p2}
+            onChange={e => setP2(e.target.value)} onBlur={() => save()} className="score-input"
+            style={{ width: '38px', textAlign: 'center', fontSize: '0.85rem', padding: '2px 4px' }} />
         </div>
       )}
     </div>
   );
 };
 
+/* ── Main Component ───────────────────────────────────────────── */
 const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPlayers = null, onDataChange = null }) => {
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState([]);
@@ -124,159 +213,151 @@ const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPla
     if (historyPlayers) setPlayers(historyPlayers);
 
     if (historyMatches && historyMatches.length > 0) {
-      // Load existing match data
       setMatches(historyMatches);
       const finalMatch = historyMatches.reduce((max, m) => m.round > max.round ? m : max, historyMatches[0]);
-      if (finalMatch && finalMatch.winner) setChampion(finalMatch.winner);
+      if (finalMatch?.winner) setChampion(finalMatch.winner);
     } else if (!readOnly && historyPlayers && historyPlayers.length > 0) {
-      // Edit mode with no bracket data yet — generate bracket from players
-      const initialMatches = generateKnockoutMatches(historyPlayers);
-      setMatches(initialMatches);
-      if (onDataChange) onDataChange(initialMatches);
+      const init = generateKnockoutMatches(historyPlayers);
+      setMatches(init);
+      onDataChange?.(init);
     }
 
-    if (readOnly) return;
-    // history edit mode: data already loaded above, no localStorage needed
-    if (historyPlayers) return;
+    if (readOnly || historyPlayers) return;
 
-    const savedPlayers = localStorage.getItem('tournamentPlayers');
-    const savedMatches = localStorage.getItem('tournamentMatches');
+    const savedPlayers  = localStorage.getItem('tournamentPlayers');
+    const savedMatches  = localStorage.getItem('tournamentMatches');
     const savedChampion = localStorage.getItem('tournamentChampion');
 
     if (savedChampion) setChampion(JSON.parse(savedChampion));
-
     if (savedPlayers) {
       const p = JSON.parse(savedPlayers);
       setPlayers(p);
       if (savedMatches) {
         setMatches(JSON.parse(savedMatches));
       } else {
-        const initialMatches = generateKnockoutMatches(p);
-        setMatches(initialMatches);
-        localStorage.setItem('tournamentMatches', JSON.stringify(initialMatches));
+        const init = generateKnockoutMatches(p);
+        setMatches(init);
+        localStorage.setItem('tournamentMatches', JSON.stringify(init));
       }
     }
   }, [readOnly, historyMatches, historyPlayers]);
 
+  /* ── Score update + advancement ── */
+  const processAdvancement = (all, finished) => {
+    const is8 = all.some(m => m.round === 1) && all.length >= 4;
+
+    if (finished.round === 1 && is8) {
+      const nextId = (finished.id === 1 || finished.id === 2) ? 5 : 6;
+      let next = all.find(m => m.id === nextId);
+      if (!next) { next = { id: nextId, round: 2, p1: null, p2: null, score1: null, score2: null, winner: null }; all.push(next); }
+      if (finished.id === 1 || finished.id === 3) next.p1 = finished.winner; else next.p2 = finished.winner;
+
+    } else if (finished.round === 1 && !is8) {
+      let fin = all.find(m => m.id === 3);
+      if (!fin) { fin = { id: 3, round: 2, p1: null, p2: null, score1: null, score2: null, winner: null }; all.push(fin); }
+      if (finished.id === 1) fin.p1 = finished.winner; else fin.p2 = finished.winner;
+
+    } else if (finished.round === 2 && is8) {
+      let fin = all.find(m => m.id === 7);
+      if (!fin) { fin = { id: 7, round: 3, p1: null, p2: null, score1: null, score2: null, winner: null }; all.push(fin); }
+      if (finished.id === 5) fin.p1 = finished.winner; else fin.p2 = finished.winner;
+
+    } else {
+      setChampion(finished.winner);
+      if (!historyPlayers) localStorage.setItem('tournamentChampion', JSON.stringify(finished.winner));
+    }
+  };
+
   const updateScore = (matchId, s1, s2, pen1 = null, pen2 = null) => {
     if (readOnly) return;
-    const updatedMatches = [...matches];
-    const matchIndex = updatedMatches.findIndex(m => m.id === matchId);
-    if (matchIndex === -1) return;
+    const all = matches.map(m => m.id === matchId
+      ? { ...m, score1: s1, score2: s2, pen1, pen2,
+          winner: s1 > s2 ? m.p1 : s2 > s1 ? m.p2 :
+                  pen1 != null && pen2 != null && pen1 !== pen2 ? (pen1 > pen2 ? m.p1 : m.p2) : null }
+      : m
+    );
+    const updated = all.find(m => m.id === matchId);
+    if (!updated?.winner) return;
 
-    const match = updatedMatches[matchIndex];
-    match.score1 = s1;
-    match.score2 = s2;
-    match.pen1 = pen1;
-    match.pen2 = pen2;
+    processAdvancement(all, updated);
+    setMatches([...all]);
 
-    // Determine winner
-    if (s1 > s2) match.winner = match.p1;
-    else if (s2 > s1) match.winner = match.p2;
-    else if (pen1 != null && pen2 != null && pen1 !== pen2) {
-      match.winner = pen1 > pen2 ? match.p1 : match.p2;
-    } else {
-      // Tied with no valid penalty info yet — wait
-      return;
-    }
-
-    processAdvancement(updatedMatches, match);
-
-    setMatches(updatedMatches);
-
-    if (onDataChange) {
-      onDataChange(updatedMatches);
-    } else {
-      localStorage.setItem('tournamentMatches', JSON.stringify(updatedMatches));
-    }
+    if (onDataChange) onDataChange([...all]);
+    else localStorage.setItem('tournamentMatches', JSON.stringify(all));
   };
 
-  const processAdvancement = (allMatches, finishedMatch) => {
-    if (readOnly) return;
-    const isQuarters = allMatches.some(m => m.round === 1) && allMatches.length >= 4;
-    
-    if (finishedMatch.round === 1 && isQuarters) {
-      // Advance to Semis
-      // Match 1 & 2 winners go to Match 5
-      // Match 3 & 4 winners go to Match 6
-      const nextMatchId = finishedMatch.id === 1 || finishedMatch.id === 2 ? 5 : 6;
-      let nextMatch = allMatches.find(m => m.id === nextMatchId);
-      
-      if (!nextMatch) {
-        nextMatch = { id: nextMatchId, round: 2, p1: null, p2: null, score1: null, score2: null, winner: null };
-        allMatches.push(nextMatch);
-      }
-      
-      if (finishedMatch.id === 1 || finishedMatch.id === 3) nextMatch.p1 = finishedMatch.winner;
-      else nextMatch.p2 = finishedMatch.winner;
-      
-    } else if (finishedMatch.round === 1 && !isQuarters) {
-      // 4 player tournament (Semis directly) -> Advance to Final
-      const nextMatchId = 3; // Final
-      let finalMatch = allMatches.find(m => m.id === nextMatchId);
-      if (!finalMatch) {
-        finalMatch = { id: nextMatchId, round: 2, p1: null, p2: null, score1: null, score2: null, winner: null };
-        allMatches.push(finalMatch);
-      }
-      if (finishedMatch.id === 1) finalMatch.p1 = finishedMatch.winner;
-      else finalMatch.p2 = finishedMatch.winner;
-      
-    } else if (finishedMatch.round === 2 && isQuarters) {
-      // Semis to Final (8 players)
-      const finalMatchId = 7;
-      let finalMatch = allMatches.find(m => m.id === finalMatchId);
-      if (!finalMatch) {
-        finalMatch = { id: finalMatchId, round: 3, p1: null, p2: null, score1: null, score2: null, winner: null };
-        allMatches.push(finalMatch);
-      }
-      if (finishedMatch.id === 5) finalMatch.p1 = finishedMatch.winner;
-      else finalMatch.p2 = finishedMatch.winner;
-      
-    } else {
-      // Final finished!
-      setChampion(finishedMatch.winner);
-      localStorage.setItem('tournamentChampion', JSON.stringify(finishedMatch.winner));
-    }
-  };
-
-  const renderColumn = (roundNum, matchIds, title) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', justifyContent: 'center' }}>
-      <h3 style={{ textAlign: 'center', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.9rem', marginBottom: '1rem' }}>{title}</h3>
-      {matchIds.map(id => {
-        const match = matches.find(m => m.id === id);
-        if (!match) return <div key={id} style={{ height: '100px', width: '260px' }} />; // placeholder
-        return <MatchCard key={id} match={match} onUpdateScore={updateScore} readOnly={readOnly} />;
-      })}
-    </div>
-  );
+  /* ── Render ── */
+  const rounds = getRounds(players.length);
+  // total height of the bracket content area (based on round-0 match count)
+  const r0Count = rounds[0].ids.length;
+  const totalH = r0Count * BASE;
 
   return (
-    <div style={{ padding: '2rem 0', overflowX: 'auto' }}>
+    <div style={{ padding: '1.5rem 0', overflowX: 'auto', overflowY: 'visible' }}>
+
+      {/* Champion banner */}
       {champion && (
-        <div style={{ textAlign: 'center', marginBottom: '3rem', animation: 'fadeIn 1s ease' }}>
-          <Trophy size={64} color="#ffd700" style={{ marginBottom: '1rem', filter: 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.5))' }} />
-          <h2 style={{ fontSize: '2.5rem', color: '#ffd700', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>CAMPEÃO</h2>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '1rem' }}>
-            <TeamLogo team={champion.team} size={60} />
-            <h1 style={{ fontSize: '3rem', margin: 0 }}>{champion.name}</h1>
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem', animation: 'fadeIn 0.8s ease' }}>
+          <Trophy size={56} color="#ffd700" style={{ marginBottom: '0.75rem', filter: 'drop-shadow(0 0 18px rgba(255,215,0,0.5))' }} />
+          <div style={{ fontSize: '0.85rem', color: '#ffd700', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 700, marginBottom: '6px' }}>Campeão</div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '14px' }}>
+            <TeamLogo team={champion.team} size={52} />
+            <span style={{ fontSize: '2.2rem', fontWeight: 800, color: '#ffd700', textShadow: '0 0 20px rgba(255,215,0,0.3)' }}>{champion.name}</span>
           </div>
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '4rem', minWidth: '800px', justifyContent: 'center' }}>
-        {players.length === 8 && renderColumn(1, [1, 2, 3, 4], 'Quartas de Final')}
+      {/* Bracket */}
+      <div style={{ display: 'inline-flex', flexDirection: 'column', minWidth: 'max-content' }}>
 
-        {players.length === 8
-          ? renderColumn(2, [5, 6], 'Semifinal')
-          : players.length === 4
-          ? renderColumn(1, [1, 2], 'Semifinal')
-          : null}
+        {/* Labels row */}
+        <div style={{ display: 'flex', marginBottom: '8px' }}>
+          {rounds.map((r, ri) => (
+            <React.Fragment key={ri}>
+              <div style={{
+                width: CARD_W, textAlign: 'center', height: LABEL_H,
+                fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase',
+                letterSpacing: '1.5px', color: 'var(--text-secondary)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {r.label}
+              </div>
+              {ri < rounds.length - 1 && <div style={{ width: CONN_W }} />}
+            </React.Fragment>
+          ))}
+        </div>
 
-        {players.length === 8
-          ? renderColumn(3, [7], 'Final')
-          : players.length === 4
-          ? renderColumn(2, [3], 'Final')
-          : renderColumn(2, [3], 'Final')}
+        {/* Content row: columns + SVG connectors */}
+        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+          {rounds.map((r, ri) => {
+            const slotH = BASE * Math.pow(2, ri);
+
+            return (
+              <React.Fragment key={ri}>
+                {/* Match column (absolute positioned slots) */}
+                <div style={{ position: 'relative', width: CARD_W, height: totalH, flexShrink: 0 }}>
+                  {r.ids.map((id, mi) => {
+                    const match = matches.find(m => m.id === id);
+                    const topY = mi * slotH + (slotH - CARD_H) / 2;
+                    return (
+                      <div key={id} style={{ position: 'absolute', top: topY, left: 0, width: CARD_W }}>
+                        {match
+                          ? <MatchCard match={match} onUpdateScore={readOnly ? null : updateScore} readOnly={readOnly} />
+                          : <div style={{ width: CARD_W, height: CARD_H, border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '10px' }} />
+                        }
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* SVG connector to next round */}
+                {ri < rounds.length - 1 && (
+                  <BracketConnector fromCount={r.ids.length} fromRoundIdx={ri} />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
