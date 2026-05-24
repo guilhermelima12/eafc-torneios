@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Link, NavLink } from 'react-router-dom';
-import { Trophy, Users, Shield, Trash2 } from 'lucide-react';
+import { Trophy, Users, BarChart2, Trash2 } from 'lucide-react';
 import TournamentSetup from './components/TournamentSetup';
 import PlayerRegistration from './components/PlayerRegistration';
 import TeamLogo from './components/TeamLogo';
@@ -9,6 +9,7 @@ import TournamentGroups from './components/TournamentGroups';
 import TeamPoolSelection from './components/TeamPoolSelection';
 import TournamentHistoryView from './components/TournamentHistoryView';
 import PlayersManager from './components/PlayersManager';
+import StatsDashboard from './components/StatsDashboard';
 import { supabase } from './lib/supabase';
 
 const Dashboard = () => {
@@ -403,6 +404,23 @@ const App = () => {
               >
                 <Users size={20} /> Jogadores
               </NavLink>
+
+              <NavLink 
+                to="/stats" 
+                style={({ isActive }) => ({ 
+                  color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                  fontWeight: isActive ? 600 : 400,
+                  textDecoration: 'none', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px',
+                  transition: 'color 0.2s',
+                  borderBottom: isActive ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                  paddingBottom: '4px'
+                })}
+              >
+                <BarChart2 size={20} /> Estatísticas
+              </NavLink>
             </nav>
 
           </div>
@@ -415,6 +433,7 @@ const App = () => {
             <Route path="/pool" element={<TeamPoolSelection />} />
             <Route path="/draft" element={<PlayerRegistration />} />
             <Route path="/players" element={<PlayersManager />} />
+            <Route path="/stats" element={<StatsDashboard />} />
             <Route path="/history/:id" element={<TournamentHistoryView />} />
           </Routes>
         </main>
