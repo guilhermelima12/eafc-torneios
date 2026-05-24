@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import TeamLogo from './TeamLogo';
-import { Trophy } from 'lucide-react';
+import { Trophy, Play } from 'lucide-react';
+import { useLiveMatches } from '../hooks/useLiveMatches';
+import LiveMatchModal from './LiveMatchModal';
+import LiveScoreBadge from './LiveScoreBadge';
+import { useAuth } from '../context/AuthContext';
 
 /* ── Layout Constants ─────────────────────────────────────────── */
 const CARD_W   = 216;   // match card width
@@ -93,7 +97,7 @@ const BracketConnector = ({ fromCount, fromRoundIdx }) => {
 };
 
 /* ── Match Card ───────────────────────────────────────────────── */
-const MatchCard = ({ match, onUpdateScore, readOnly }) => {
+const MatchCard = ({ match, onUpdateScore, readOnly, liveMatch, onStartLive }) => {
   const [s1, setS1] = useState(match.score1 ?? '');
   const [s2, setS2] = useState(match.score2 ?? '');
   const [p1, setP1] = useState(match.pen1 ?? '');
@@ -168,43 +172,93 @@ const MatchCard = ({ match, onUpdateScore, readOnly }) => {
     </div>
   );
 
+  const isLive = !!liveMatch;
+
   return (
-    <div style={{
-      width: CARD_W,
-      border: `1px solid ${isFinished ? 'rgba(255,255,255,0.08)' : 'rgba(96,239,255,0.25)'}`,
-      borderRadius: '10px',
-      background: 'rgba(12,18,32,0.85)',
-      backdropFilter: 'blur(4px)',
-      overflow: 'hidden',
-      boxShadow: isFinished ? 'none' : '0 0 12px rgba(96,239,255,0.08)',
-      transition: 'border-color 0.3s, box-shadow 0.3s',
-    }}>
-      {playerRow(match.p1, match.score1, w1, s1, setS1, match.pen1, 'top')}
-
-      {/* Divider */}
-      <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '0 10px' }} />
-
-      {playerRow(match.p2, match.score2, w2, s2, setS2, match.pen2, 'bottom')}
-
-      {/* Penalty row */}
-      {isTied && !isFinished && !readOnly && (
-        <div style={{ padding: '8px 10px', background: 'rgba(251,191,36,0.06)', borderTop: '1px solid rgba(251,191,36,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '0.72rem', color: '#fbbf24', fontWeight: 600, whiteSpace: 'nowrap' }}>Pênaltis</span>
-          <input type="number" min="0" placeholder="—" value={p1}
-            onChange={e => setP1(e.target.value)} onBlur={() => save()} className="score-input"
-            style={{ width: '38px', textAlign: 'center', fontSize: '0.85rem', padding: '2px 4px' }} />
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>×</span>
-          <input type="number" min="0" placeholder="—" value={p2}
-            onChange={e => setP2(e.target.value)} onBlur={() => save()} className="score-input"
-            style={{ width: '38px', textAlign: 'center', fontSize: '0.85rem', padding: '2px 4px' }} />
+    <div style={{ position: 'relative' }}>
+      {/* Live badge overlay (top of card) */}
+      {isLive && (
+        <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', zIndex: 10, whiteSpace: 'nowrap' }}>
+          <LiveScoreBadge liveMatch={liveMatch} />
         </div>
       )}
+
+      <div style={{
+        width: CARD_W,
+        border: isLive
+          ? '1px solid rgba(255,40,40,0.5)'
+          : `1px solid ${isFinished ? 'rgba(255,255,255,0.08)' : 'rgba(96,239,255,0.25)'}`,
+        borderRadius: '10px',
+        background: 'rgba(12,18,32,0.85)',
+        backdropFilter: 'blur(4px)',
+        overflow: 'hidden',
+        boxShadow: isLive
+          ? '0 0 18px rgba(255,40,40,0.2)'
+          : isFinished ? 'none' : '0 0 12px rgba(96,239,255,0.08)',
+        transition: 'border-color 0.3s, box-shadow 0.3s',
+      }}>
+        {playerRow(match.p1, match.score1, w1, s1, setS1, match.pen1, 'top')}
+
+        {/* Divider */}
+        <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '0 10px' }} />
+
+        {playerRow(match.p2, match.score2, w2, s2, setS2, match.pen2, 'bottom')}
+
+        {/* Penalty row */}
+        {isTied && !isFinished && !readOnly && (
+          <div style={{ padding: '8px 10px', background: 'rgba(251,191,36,0.06)', borderTop: '1px solid rgba(251,191,36,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.72rem', color: '#fbbf24', fontWeight: 600, whiteSpace: 'nowrap' }}>Pênaltis</span>
+            <input type="number" min="0" placeholder="—" value={p1}
+              onChange={e => setP1(e.target.value)} onBlur={() => save()} className="score-input"
+              style={{ width: '38px', textAlign: 'center', fontSize: '0.85rem', padding: '2px 4px' }} />
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>×</span>
+            <input type="number" min="0" placeholder="—" value={p2}
+              onChange={e => setP2(e.target.value)} onBlur={() => save()} className="score-input"
+              style={{ width: '38px', textAlign: 'center', fontSize: '0.85rem', padding: '2px 4px' }} />
+          </div>
+        )}
+
+        {/* Start Live button — admin only, match not finished, both players defined */}
+        {!readOnly && !isFinished && match.p1 && match.p2 && onStartLive && !isLive && (
+          <button
+            onClick={() => onStartLive(match)}
+            style={{
+              width: '100%', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+              background: 'rgba(96,239,255,0.05)', borderTop: '1px solid rgba(96,239,255,0.15)',
+              border: 'none', color: 'var(--accent-secondary)', cursor: 'pointer',
+              fontFamily: 'Outfit', fontSize: '0.75rem', fontWeight: 600,
+              transition: 'background 0.2s', letterSpacing: '0.5px',
+            }}
+          >
+            <Play size={12} fill="currentColor" /> INICIAR PARTIDA
+          </button>
+        )}
+
+        {/* Re-open live modal button when match is already live */}
+        {!readOnly && isLive && onStartLive && (
+          <button
+            onClick={() => onStartLive(match, true)}
+            style={{
+              width: '100%', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+              background: 'rgba(255,40,40,0.08)', borderTop: '1px solid rgba(255,40,40,0.2)',
+              border: 'none', color: '#ff4b4b', cursor: 'pointer',
+              fontFamily: 'Outfit', fontSize: '0.75rem', fontWeight: 600,
+              transition: 'background 0.2s',
+            }}
+          >
+            <Play size={12} fill="currentColor" /> ABRIR PAINEL
+          </button>
+        )}
+      </div>
     </div>
   );
 };
 
 /* ── Main Component ───────────────────────────────────────────── */
 const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPlayers = null, onDataChange = null }) => {
+  const { isAdmin } = useAuth();
+  const { liveMatches, getLiveMatch, startLive, updateScore: liveUpdateScore, finishLive } = useLiveMatches();
+  const [activeLiveMatch, setActiveLiveMatch] = useState(null); // the live_matches row being controlled
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState([]);
   const [champion, setChampion] = useState(null);
@@ -286,14 +340,60 @@ const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPla
     else localStorage.setItem('tournamentMatches', JSON.stringify(all));
   };
 
+  /* ── Live match handlers ── */
+  const handleStartLive = async (match, reopen = false) => {
+    if (reopen) {
+      // Match already live — just re-open the panel using the existing live row
+      const existing = getLiveMatch(match.round, match.p1, match.p2);
+      if (existing) setActiveLiveMatch(existing);
+      return;
+    }
+    const matchKey = await startLive(match, match.round);
+    if (matchKey) {
+      // Build local object optimistically so modal opens immediately
+      setActiveLiveMatch({
+        match_key: matchKey,
+        p1_name: match.p1?.name, p2_name: match.p2?.name,
+        p1_team: match.p1?.team || null, p2_team: match.p2?.team || null,
+        score1: 0, score2: 0, round: match.round, status: 'live',
+        _matchId: match.id,
+      });
+    }
+  };
+
+  const handleLiveFinish = async (matchKey) => {
+    const result = await finishLive(matchKey);
+    if (result && activeLiveMatch?._matchId != null) {
+      updateScore(activeLiveMatch._matchId, result.score1, result.score2);
+    }
+    setActiveLiveMatch(null);
+  };
+
   /* ── Render ── */
   const rounds = getRounds(players.length);
   // total height of the bracket content area (based on round-0 match count)
   const r0Count = rounds[0].ids.length;
   const totalH = r0Count * BASE;
 
+  // Keep activeLiveMatch in sync with realtime updates from the hook
+  React.useEffect(() => {
+    if (!activeLiveMatch) return;
+    const updated = liveMatches.find(m => m.match_key === activeLiveMatch.match_key);
+    if (updated) setActiveLiveMatch(prev => ({ ...updated, _matchId: prev._matchId }));
+  }, [liveMatches, activeLiveMatch?.match_key]);
+
   return (
     <div style={{ padding: '1.5rem 0', overflowX: 'auto', overflowY: 'visible' }}>
+
+      {/* Live Match Modal (admin panel) */}
+      {activeLiveMatch && (
+        <LiveMatchModal
+          liveMatch={activeLiveMatch}
+          onUpdateScore={liveUpdateScore}
+          onFinish={handleLiveFinish}
+          onClose={() => setActiveLiveMatch(null)}
+        />
+      )}
 
       {/* Champion banner */}
       {champion && (
@@ -339,10 +439,17 @@ const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPla
                   {r.ids.map((id, mi) => {
                     const match = matches.find(m => m.id === id);
                     const topY = mi * slotH + (slotH - CARD_H) / 2;
+                    const liveM = getLiveMatch(match?.round, match?.p1, match?.p2);
                     return (
-                      <div key={id} style={{ position: 'absolute', top: topY, left: 0, width: CARD_W }}>
+                      <div key={id} style={{ position: 'absolute', top: topY, left: 0, width: CARD_W, paddingTop: liveM ? '18px' : '0' }}>
                         {match
-                          ? <MatchCard match={match} onUpdateScore={readOnly ? null : updateScore} readOnly={readOnly} />
+                          ? <MatchCard
+                              match={match}
+                              onUpdateScore={readOnly ? null : updateScore}
+                              readOnly={readOnly}
+                              liveMatch={liveM}
+                              onStartLive={isAdmin && !readOnly ? handleStartLive : null}
+                            />
                           : <div style={{ width: CARD_W, height: CARD_H, border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '10px' }} />
                         }
                       </div>

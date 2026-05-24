@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import TeamLogo from './TeamLogo';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Play } from 'lucide-react';
+import { useLiveMatches } from '../hooks/useLiveMatches';
+import LiveMatchModal from './LiveMatchModal';
+import LiveScoreBadge from './LiveScoreBadge';
+import { useAuth } from '../context/AuthContext';
 
 const emptyStats = () => ({ pts: 0, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0 });
 
@@ -39,6 +43,9 @@ const TournamentGroups = ({
   advancePerGroup = 2,
   historyGroups = null, historyMatches = null
 }) => {
+  const { isAdmin } = useAuth();
+  const { getLiveMatch, startLive, updateScore: liveUpdateScore, finishLive, liveMatches } = useLiveMatches();
+  const [activeLiveMatch, setActiveLiveMatch] = useState(null);
   const [groupsData, setGroupsData] = useState([]);
   const [matches, setMatches] = useState([]);
 
@@ -132,6 +139,42 @@ const TournamentGroups = ({
     onFinishGroups(qualified);
   };
 
+  /* ── Live match handlers ── */
+  const handleStartLive = async (match, reopen = false) => {
+    const round = match.groupId + 1; // use groupId as round identifier for groups
+    if (reopen) {
+      const existing = getLiveMatch(round, match.p1, match.p2);
+      if (existing) setActiveLiveMatch({ ...existing, _matchId: match.id });
+      return;
+    }
+    const matchKey = await startLive({ ...match, round }, round);
+    if (matchKey) {
+      setActiveLiveMatch({
+        match_key: matchKey,
+        p1_name: match.p1?.name, p2_name: match.p2?.name,
+        p1_team: match.p1?.team || null, p2_team: match.p2?.team || null,
+        score1: 0, score2: 0, round, status: 'live',
+        _matchId: match.id,
+      });
+    }
+  };
+
+  // Sync activeLiveMatch with realtime updates
+  React.useEffect(() => {
+    if (!activeLiveMatch) return;
+    const updated = liveMatches.find(m => m.match_key === activeLiveMatch.match_key);
+    if (updated) setActiveLiveMatch(prev => ({ ...updated, _matchId: prev._matchId }));
+  }, [liveMatches, activeLiveMatch?.match_key]);
+
+  const handleLiveFinish = async (matchKey) => {
+    const result = await finishLive(matchKey);
+    if (result && activeLiveMatch?._matchId != null) {
+      updateMatchScore(activeLiveMatch._matchId, String(result.score1), String(result.score2));
+    }
+    setActiveLiveMatch(null);
+  };
+
+
   const isAllMatchesFinished = matches.length > 0 && matches.every(m => m.score1 !== '' && m.score2 !== '');
   const groupNames = ['Grupo A', 'Grupo B', 'Grupo C', 'Grupo D', 'Grupo E', 'Grupo F', 'Grupo G', 'Grupo H'];
   const totalQualified = groupsData.length * advancePerGroup;
@@ -139,6 +182,17 @@ const TournamentGroups = ({
 
   return (
     <div style={{ padding: '2rem 0' }}>
+
+      {/* Live Match Modal */}
+      {activeLiveMatch && (
+        <LiveMatchModal
+          liveMatch={activeLiveMatch}
+          onUpdateScore={liveUpdateScore}
+          onFinish={handleLiveFinish}
+          onClose={() => setActiveLiveMatch(null)}
+        />
+      )}
+
       {groupsData.map((group, gIndex) => (
         <div key={gIndex} style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginBottom: '3rem' }}>
 
@@ -206,44 +260,84 @@ const TournamentGroups = ({
           <div className="glass-panel" style={{ flex: '1 1 300px', padding: '1rem', maxHeight: '500px', overflowY: 'auto' }}>
             <h4 style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Partidas</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {matches.filter(m => m.groupId === gIndex).map(match => (
-                <div key={match.id}>
-                  {match.leg && (
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      {match.leg === 1 ? 'Jogo 1' : 'Jogo 2'}
-                    </div>
-                  )}
-                  <div style={{
-                    background: match.score1 !== '' && match.score2 !== '' ? 'rgba(0,255,135,0.04)' : 'rgba(0,0,0,0.2)',
-                    padding: '10px', borderRadius: '8px', border: match.score1 !== '' && match.score2 !== '' ? '1px solid rgba(0,255,135,0.15)' : '1px solid transparent',
-                    display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px'
-                  }}>
-                    <div style={{ flex: 1, textAlign: 'right', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80px' }}>{match.p1.name}</span>
-                      <TeamLogo team={match.p1.team} size={22} />
-                    </div>
-                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      {readOnly ? (
-                        <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{match.score1 !== '' ? match.score1 : '-'}</span>
-                      ) : (
-                        <input type="number" min="0" placeholder="-" className="score-input" value={match.score1}
-                          onChange={e => updateMatchScore(match.id, e.target.value, match.score2)} />
+              {matches.filter(m => m.groupId === gIndex).map(match => {
+                const round = match.groupId + 1;
+                const liveM = getLiveMatch(round, match.p1, match.p2);
+                const isMatchDone = match.score1 !== '' && match.score2 !== '';
+                return (
+                  <div key={match.id}>
+                    {match.leg && (
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        {match.leg === 1 ? 'Jogo 1' : 'Jogo 2'}
+                      </div>
+                    )}
+                    <div style={{
+                      background: isMatchDone ? 'rgba(0,255,135,0.04)' : liveM ? 'rgba(255,40,40,0.05)' : 'rgba(0,0,0,0.2)',
+                      padding: '10px', borderRadius: '8px',
+                      border: isMatchDone ? '1px solid rgba(0,255,135,0.15)' : liveM ? '1px solid rgba(255,40,40,0.3)' : '1px solid transparent',
+                      display: 'flex', flexDirection: 'column', gap: '6px'
+                    }}>
+                      {liveM && (
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                          <LiveScoreBadge liveMatch={liveM} />
+                        </div>
                       )}
-                      <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>x</span>
-                      {readOnly ? (
-                        <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{match.score2 !== '' ? match.score2 : '-'}</span>
-                      ) : (
-                        <input type="number" min="0" placeholder="-" className="score-input" value={match.score2}
-                          onChange={e => updateMatchScore(match.id, match.score1, e.target.value)} />
+                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ flex: 1, textAlign: 'right', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80px' }}>{match.p1.name}</span>
+                          <TeamLogo team={match.p1.team} size={22} />
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          {readOnly ? (
+                            <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{match.score1 !== '' ? match.score1 : '-'}</span>
+                          ) : (
+                            <input type="number" min="0" placeholder="-" className="score-input" value={match.score1}
+                              onChange={e => updateMatchScore(match.id, e.target.value, match.score2)} />
+                          )}
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>x</span>
+                          {readOnly ? (
+                            <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{match.score2 !== '' ? match.score2 : '-'}</span>
+                          ) : (
+                            <input type="number" min="0" placeholder="-" className="score-input" value={match.score2}
+                              onChange={e => updateMatchScore(match.id, match.score1, e.target.value)} />
+                          )}
+                        </div>
+                        <div style={{ flex: 1, textAlign: 'left', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '6px' }}>
+                          <TeamLogo team={match.p2.team} size={22} />
+                          <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80px' }}>{match.p2.name}</span>
+                        </div>
+                      </div>
+                      {/* Iniciar Partida button */}
+                      {isAdmin && !readOnly && !isMatchDone && !liveM && (
+                        <button
+                          onClick={() => handleStartLive(match)}
+                          style={{
+                            width: '100%', padding: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                            background: 'rgba(96,239,255,0.06)', border: '1px solid rgba(96,239,255,0.2)',
+                            borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer',
+                            fontFamily: 'Outfit', fontSize: '0.72rem', fontWeight: 600, transition: 'all 0.2s',
+                          }}
+                        >
+                          <Play size={11} fill="currentColor" /> INICIAR PARTIDA
+                        </button>
                       )}
-                    </div>
-                    <div style={{ flex: 1, textAlign: 'left', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '6px' }}>
-                      <TeamLogo team={match.p2.team} size={22} />
-                      <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80px' }}>{match.p2.name}</span>
+                      {isAdmin && !readOnly && liveM && (
+                        <button
+                          onClick={() => handleStartLive(match, true)}
+                          style={{
+                            width: '100%', padding: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                            background: 'rgba(255,40,40,0.08)', border: '1px solid rgba(255,40,40,0.25)',
+                            borderRadius: '6px', color: '#ff4b4b', cursor: 'pointer',
+                            fontFamily: 'Outfit', fontSize: '0.72rem', fontWeight: 600, transition: 'all 0.2s',
+                          }}
+                        >
+                          <Play size={11} fill="currentColor" /> ABRIR PAINEL
+                        </button>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
