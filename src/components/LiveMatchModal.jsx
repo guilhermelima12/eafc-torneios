@@ -4,6 +4,15 @@ import TeamLogo from './TeamLogo';
 
 const LiveMatchModal = ({ liveMatch, onUpdateScore, onFinish, onClose }) => {
   const [scoreAnim, setScoreAnim] = useState(null); // 'p1' | 'p2'
+  // Local scores update instantly; parent syncs via Realtime in background
+  const [score1, setScore1] = useState(liveMatch.score1 ?? 0);
+  const [score2, setScore2] = useState(liveMatch.score2 ?? 0);
+
+  // Keep in sync if Realtime pushes updates from another device
+  useEffect(() => {
+    setScore1(liveMatch.score1 ?? 0);
+    setScore2(liveMatch.score2 ?? 0);
+  }, [liveMatch.score1, liveMatch.score2]);
 
   const triggerAnim = (side) => {
     setScoreAnim(side);
@@ -11,15 +20,19 @@ const LiveMatchModal = ({ liveMatch, onUpdateScore, onFinish, onClose }) => {
   };
 
   const handleGoal = async (side, delta) => {
-    const newScore1 = side === 'p1' ? Math.max(0, liveMatch.score1 + delta) : liveMatch.score1;
-    const newScore2 = side === 'p2' ? Math.max(0, liveMatch.score2 + delta) : liveMatch.score2;
+    const newScore1 = side === 'p1' ? Math.max(0, score1 + delta) : score1;
+    const newScore2 = side === 'p2' ? Math.max(0, score2 + delta) : score2;
+    // Update locally first for instant feedback
+    setScore1(newScore1);
+    setScore2(newScore2);
     if (delta > 0) triggerAnim(side);
+    // Then persist to Supabase (broadcasts to all other clients via Realtime)
     await onUpdateScore(liveMatch.match_key, newScore1, newScore2);
   };
 
   const handleFinish = async () => {
     if (!window.confirm(
-      `Finalizar ${liveMatch.p1_name} ${liveMatch.score1} – ${liveMatch.score2} ${liveMatch.p2_name}?\n\nEsse placar será registrado no torneio.`
+      `Finalizar ${liveMatch.p1_name} ${score1} – ${score2} ${liveMatch.p2_name}?\n\nEsse placar será registrado no torneio.`
     )) return;
     await onFinish(liveMatch.match_key);
     onClose();
@@ -89,7 +102,7 @@ const LiveMatchModal = ({ liveMatch, onUpdateScore, onFinish, onClose }) => {
             transition: 'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
             textShadow: scoreAnim === 'p1' ? '0 0 40px rgba(0,255,135,0.6)' : 'none',
           }}>
-            {liveMatch.score1}
+            {score1}
           </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button style={btnStyle('255,40,40')} onClick={() => handleGoal('p1', -1)} title="Remover gol">−</button>
@@ -119,7 +132,7 @@ const LiveMatchModal = ({ liveMatch, onUpdateScore, onFinish, onClose }) => {
             transition: 'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
             textShadow: scoreAnim === 'p2' ? '0 0 40px rgba(0,255,135,0.6)' : 'none',
           }}>
-            {liveMatch.score2}
+            {score2}
           </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button style={btnStyle('255,40,40')} onClick={() => handleGoal('p2', -1)} title="Remover gol">−</button>
