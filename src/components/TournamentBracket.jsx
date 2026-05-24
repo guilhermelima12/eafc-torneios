@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import TeamLogo from './TeamLogo';
 import { Trophy } from 'lucide-react';
 
-// Bracket Generation Logic for 8, 4 or 2 players
+// Bracket Generation: works for 2–8 players
 const generateKnockoutMatches = (players) => {
   const matches = [];
   const count = players.length;
@@ -15,10 +15,24 @@ const generateKnockoutMatches = (players) => {
   } else if (count === 4) {
     matches.push({ id: 1, round: 1, p1: players[0], p2: players[3], score1: null, score2: null, winner: null });
     matches.push({ id: 2, round: 1, p1: players[1], p2: players[2], score1: null, score2: null, winner: null });
-  } else if (count === 2) {
-    // Direct final (e.g. 3-player single group where only top 2 advance)
-    matches.push({ id: 3, round: 2, p1: players[0], p2: players[1], score1: null, score2: null, winner: null });
+  } else if (count >= 2) {
+    // Generic: pair up players sequentially, final = round 2
+    let id = 1;
+    const roundMatches = [];
+    for (let i = 0; i + 1 < count; i += 2) {
+      roundMatches.push({ id: id++, round: 1, p1: players[i], p2: players[i + 1], score1: null, score2: null, winner: null });
+    }
+    // If odd number of players, last player gets a bye directly to final
+    if (count % 2 !== 0) {
+      roundMatches.push({ id: id++, round: 1, p1: players[count - 1], p2: null, score1: null, score2: null, winner: players[count - 1], isBye: true });
+    }
+    matches.push(...roundMatches);
+    // Add semi slots and final only if more than 2 base matches
+    if (roundMatches.length > 1) {
+      matches.push({ id: id++, round: 2, p1: null, p2: null, score1: null, score2: null, winner: null });
+    }
   }
+
   return matches;
 };
 
