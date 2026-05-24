@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { BarChart2, TrendingUp, Target, Swords, Shield, Trophy, ChevronDown } from 'lucide-react';
+import { BarChart2, TrendingUp, Target, Swords, Shield, Trophy, ChevronDown, Shirt } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import TeamLogo from './TeamLogo';
 
 /* ── helpers ──────────────────────────────────────────────────── */
 const getTournamentStandings = (t) => {
@@ -164,6 +165,17 @@ const StatsDashboard = () => {
       losses += bStats.losses + gStats.losses;
       draws += bStats.draws + gStats.draws;
 
+      // Extract team used in this tournament
+      const playerData = t.players?.find(p => p?.name === selected);
+      // Also try from bracket/group matches in case players array lacks team
+      const teamFromMatch =
+        t.bracket_matches?.find(m => m.p1?.name === selected)?.p1?.team ||
+        t.bracket_matches?.find(m => m.p2?.name === selected)?.p2?.team ||
+        t.group_matches?.find(m => m.p1?.name === selected)?.p1?.team ||
+        t.group_matches?.find(m => m.p2?.name === selected)?.p2?.team ||
+        t.groups_data?.flatMap(g => g).find(p => p?.name === selected)?.team;
+      const team = playerData?.team || teamFromMatch || null;
+
       history.push({
         name: t.config?.name || 'Torneio',
         date: t.date,
@@ -172,6 +184,7 @@ const StatsDashboard = () => {
         champion: t.champion?.name,
         isChampion: t.champion?.name === selected,
         format: t.config?.format,
+        team,
       });
     });
 
@@ -260,6 +273,52 @@ const StatsDashboard = () => {
               sub={stats.matches > 0 ? `${(stats.gf / stats.matches).toFixed(1)} gols/jogo` : ''} />
           </div>
 
+          {/* Teams Used Gallery */}
+          {(() => {
+            const teamsUsed = stats.history
+              .filter(h => h.team)
+              .reduce((acc, h) => {
+                const key = h.team?.name || JSON.stringify(h.team);
+                if (!acc.find(t => (t.team?.name || JSON.stringify(t.team)) === key)) {
+                  acc.push({ team: h.team, count: 1, lastTournament: h.name });
+                } else {
+                  acc.find(t => (t.team?.name || JSON.stringify(t.team)) === key).count++;
+                }
+                return acc;
+              }, []);
+            if (teamsUsed.length === 0) return null;
+            return (
+              <div className="glass-panel">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem' }}>
+                  <Shirt size={20} color="var(--accent-secondary)" />
+                  <h3 style={{ margin: 0 }}>Times Utilizados</h3>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{teamsUsed.length} clube(s) diferente(s)</span>
+                </div>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  {teamsUsed.map((entry, i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      padding: '10px 16px', borderRadius: '12px',
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid var(--border-color)',
+                      transition: 'border-color 0.2s',
+                    }}>
+                      <TeamLogo team={entry.team} size={32} />
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                          {entry.team?.name || 'Clube Desconhecido'}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          {entry.count} torneio{entry.count > 1 ? 's' : ''}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Position over time chart */}
           <div className="glass-panel">
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
@@ -282,6 +341,7 @@ const StatsDashboard = () => {
                   <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
                     <th style={{ padding: '8px 12px', textAlign: 'left' }}>Torneio</th>
                     <th style={{ padding: '8px 12px', textAlign: 'left' }}>Formato</th>
+                    <th style={{ padding: '8px 12px', textAlign: 'left' }}>Time</th>
                     <th style={{ padding: '8px 12px', textAlign: 'center' }}>Data</th>
                     <th style={{ padding: '8px 12px', textAlign: 'center' }}>Posição</th>
                     <th style={{ padding: '8px 12px', textAlign: 'center' }}>Campeão</th>
@@ -301,6 +361,17 @@ const StatsDashboard = () => {
                         <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', background: 'rgba(96,239,255,0.1)', color: 'var(--accent-secondary)', border: '1px solid rgba(96,239,255,0.15)' }}>
                           {fmtLabel(h.format)}
                         </span>
+                      </td>
+                      {/* Team column */}
+                      <td style={{ padding: '12px' }}>
+                        {h.team ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <TeamLogo team={h.team} size={24} />
+                            <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{h.team?.name || '—'}</span>
+                          </div>
+                        ) : (
+                          <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>—</span>
+                        )}
                       </td>
                       <td style={{ padding: '12px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{h.date}</td>
                       <td style={{ padding: '12px', textAlign: 'center' }}>
