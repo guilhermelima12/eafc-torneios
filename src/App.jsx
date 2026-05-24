@@ -205,28 +205,61 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            <div style={{ padding: '1.5rem', background: 'rgba(0, 255, 135, 0.05)', border: '1px solid var(--accent-primary)', borderRadius: '12px', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ color: 'var(--accent-primary)', marginBottom: '0.5rem', fontSize: '1.5rem' }}>{config.name}</h3>
-                <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
-                  Formato: <strong>{config.format === 'knockout' ? 'Mata-Mata' : config.format === 'groups' ? 'Grupos + Eliminatórias' : 'Liga (Pontos Corridos)'}</strong> | 
-                  Participantes: <strong>{config.participants}</strong>
-                </p>
+            {/* Tournament Header */}
+            <div style={{ padding: '1.5rem', background: 'rgba(0,255,135,0.05)', border: '1px solid var(--accent-primary)', borderRadius: '12px', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h3 style={{ color: 'var(--accent-primary)', marginBottom: '0.4rem', fontSize: '1.5rem' }}>{config.name}</h3>
+                  <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>
+                    <strong>{config.format === 'knockout' ? 'Mata-Mata' : config.format === 'groups' ? 'Grupos + Eliminatórias' : 'Pontos Corridos'}</strong>
+                    {' · '}{config.legsMode === 'double' ? 'Ida e Volta' : 'Jogo Único'}
+                    {' · '}{config.participants} participantes
+                  </p>
+                </div>
+                <button onClick={handleEndTournament} className="btn-secondary" style={{ color: '#ff4b4b', borderColor: 'rgba(255,75,75,0.3)', whiteSpace: 'nowrap' }}>
+                  Encerrar / Salvar no Histórico
+                </button>
               </div>
-              <button 
-                onClick={handleEndTournament}
-                className="btn-secondary" 
-                style={{ color: '#ff4b4b', borderColor: 'rgba(255, 75, 75, 0.3)' }}
-              >
-                Encerrar / Salvar no Histórico
-              </button>
+
+              {/* Management buttons */}
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => {
+                    if (!window.confirm('Resetar todos os placares? Os jogadores e times serão mantidos, mas os seeds NÃO serão alterados.')) return;
+                    localStorage.removeItem('tournamentMatches');
+                    localStorage.removeItem('tournamentGroups');
+                    localStorage.removeItem('tournamentGroupMatches');
+                    localStorage.removeItem('groupStageFinished');
+                    localStorage.removeItem('tournamentChampion');
+                    window.location.reload();
+                  }}
+                  className="btn-secondary"
+                  style={{ padding: '7px 14px', fontSize: '0.85rem', color: '#fbbf24', borderColor: 'rgba(251,191,36,0.3)' }}
+                >
+                  🔄 Resetar Partidas
+                </button>
+                <button
+                  onClick={() => { localStorage.removeItem('tournamentPlayers'); localStorage.removeItem('tournamentDraftPool'); window.location.href = '/#/pool'; }}
+                  className="btn-secondary"
+                  style={{ padding: '7px 14px', fontSize: '0.85rem', color: 'var(--accent-secondary)', borderColor: 'rgba(96,239,255,0.3)' }}
+                >
+                  ⚙️ Trocar Times
+                </button>
+                <button
+                  onClick={() => { localStorage.removeItem('tournamentPlayers'); window.location.href = '/#/draft'; }}
+                  className="btn-secondary"
+                  style={{ padding: '7px 14px', fontSize: '0.85rem' }}
+                >
+                  👥 Refazer Draft
+                </button>
+              </div>
             </div>
 
-            <div style={{ marginTop: '2rem' }}>
+            <div style={{ marginTop: '1rem' }}>
               {phase === 'groups' ? (
-                <TournamentGroups players={players} onFinishGroups={handleFinishGroups} />
+                <TournamentGroups players={players} onFinishGroups={handleFinishGroups} legsMode={config.legsMode || 'single'} />
               ) : phase === 'league' ? (
-                <TournamentGroups players={players} onFinishGroups={handleFinishGroups} leagueOnly={true} />
+                <TournamentGroups players={players} onFinishGroups={handleFinishGroups} leagueOnly={true} legsMode={config.legsMode || 'single'} />
               ) : (
                 <TournamentBracket />
               )}

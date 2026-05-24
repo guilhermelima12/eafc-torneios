@@ -8,7 +8,8 @@ const TournamentSetup = () => {
     name: '',
     format: 'groups',
     participants: 8,
-    teamSelectionMode: 'manual'
+    teamSelectionMode: 'manual',
+    legsMode: 'single'
   });
 
   const handleSubmit = (e) => {
@@ -69,6 +70,31 @@ const TournamentSetup = () => {
             <option value="groups" style={{ background: 'var(--bg-secondary)' }}>Fase de Grupos + Eliminatórias</option>
             <option value="league" style={{ background: 'var(--bg-secondary)' }}>Pontos Corridos (Liga)</option>
           </select>
+        </div>
+
+        {/* Legs Mode */}
+        <div>
+          <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+            Jogos
+          </label>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            {[{v:'single',label:'Apenas Ida'},{v:'double',label:'Ida e Volta'}].map(({v,label}) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setFormData({...formData, legsMode: v})}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '8px',
+                  border: `1px solid ${formData.legsMode === v ? 'var(--accent-secondary)' : 'var(--border-color)'}`,
+                  background: formData.legsMode === v ? 'rgba(96,239,255,0.1)' : 'transparent',
+                  color: formData.legsMode === v ? 'var(--accent-secondary)' : 'var(--text-primary)',
+                  cursor: 'pointer', fontFamily: 'Outfit', fontWeight: 600, transition: 'all 0.2s ease'
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>

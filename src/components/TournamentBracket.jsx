@@ -25,24 +25,26 @@ const generateKnockoutMatches = (players) => {
 const MatchCard = ({ match, onUpdateScore, readOnly }) => {
   const [s1, setS1] = useState(match.score1 ?? '');
   const [s2, setS2] = useState(match.score2 ?? '');
-  
-  const handleSave = () => {
-    if (s1 !== '' && s2 !== '') {
-      onUpdateScore(match.id, parseInt(s1), parseInt(s2));
+  const [p1, setP1] = useState(match.pen1 ?? '');
+  const [p2, setP2] = useState(match.pen2 ?? '');
+
+  const isTied = s1 !== '' && s2 !== '' && parseInt(s1) === parseInt(s2);
+  const isFinished = match.winner !== null;
+
+  const handleSave = (ns1 = s1, ns2 = s2, np1 = p1, np2 = p2) => {
+    if (ns1 !== '' && ns2 !== '') {
+      onUpdateScore(match.id, parseInt(ns1), parseInt(ns2),
+        np1 !== '' ? parseInt(np1) : null,
+        np2 !== '' ? parseInt(np2) : null);
     }
   };
 
-  const isFinished = match.winner !== null;
-
   return (
     <div style={{
-      background: 'rgba(18, 24, 38, 0.8)',
+      background: 'rgba(18,24,38,0.8)',
       border: `1px solid ${isFinished ? 'var(--border-color)' : 'var(--accent-secondary)'}`,
-      borderRadius: '12px',
-      padding: '16px',
-      width: '260px',
-      position: 'relative',
-      boxShadow: isFinished ? 'none' : '0 0 15px rgba(96, 239, 255, 0.1)'
+      borderRadius: '12px', padding: '16px', width: '260px', position: 'relative',
+      boxShadow: isFinished ? 'none' : '0 0 15px rgba(96,239,255,0.1)'
     }}>
       {/* Player 1 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', opacity: isFinished && match.winner?.id !== match.p1?.id ? 0.5 : 1 }}>
@@ -51,9 +53,13 @@ const MatchCard = ({ match, onUpdateScore, readOnly }) => {
           <span style={{ fontWeight: 600 }}>{match.p1?.name || 'TBD'}</span>
         </div>
         {!isFinished && match.p1 && !readOnly ? (
-          <input type="number" min="0" placeholder="-" value={s1} onChange={(e)=>setS1(e.target.value)} onBlur={handleSave} className="score-input" />
+          <input type="number" min="0" placeholder="-" value={s1}
+            onChange={e => setS1(e.target.value)} onBlur={() => handleSave()} className="score-input" />
         ) : (
-          <span style={{ fontWeight: 'bold', fontSize: '1.5rem', color: match.winner?.id === match.p1?.id ? 'var(--accent-primary)' : 'white' }}>{match.score1 ?? '-'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {match.pen1 != null && <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({match.pen1})</span>}
+            <span style={{ fontWeight: 'bold', fontSize: '1.5rem', color: match.winner?.id === match.p1?.id ? 'var(--accent-primary)' : 'white' }}>{match.score1 ?? '-'}</span>
+          </div>
         )}
       </div>
 
@@ -66,11 +72,31 @@ const MatchCard = ({ match, onUpdateScore, readOnly }) => {
           <span style={{ fontWeight: 600 }}>{match.p2?.name || 'TBD'}</span>
         </div>
         {!isFinished && match.p2 && !readOnly ? (
-          <input type="number" min="0" placeholder="-" value={s2} onChange={(e)=>setS2(e.target.value)} onBlur={handleSave} className="score-input" />
+          <input type="number" min="0" placeholder="-" value={s2}
+            onChange={e => setS2(e.target.value)} onBlur={() => handleSave()} className="score-input" />
         ) : (
-          <span style={{ fontWeight: 'bold', fontSize: '1.5rem', color: match.winner?.id === match.p2?.id ? 'var(--accent-primary)' : 'white' }}>{match.score2 ?? '-'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {match.pen2 != null && <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({match.pen2})</span>}
+            <span style={{ fontWeight: 'bold', fontSize: '1.5rem', color: match.winner?.id === match.p2?.id ? 'var(--accent-primary)' : 'white' }}>{match.score2 ?? '-'}</span>
+          </div>
         )}
       </div>
+
+      {/* Penalty input — shown only when tied and not finished */}
+      {isTied && !isFinished && !readOnly && (
+        <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(251,191,36,0.08)', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.25)' }}>
+          <div style={{ fontSize: '0.75rem', color: '#fbbf24', marginBottom: '8px', textAlign: 'center', fontWeight: 600 }}>
+            ⚽ Empate — Pênaltis (opcional)
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+            <input type="number" min="0" placeholder="-" value={p1}
+              onChange={e => setP1(e.target.value)} onBlur={() => handleSave()} className="score-input" />
+            <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>x</span>
+            <input type="number" min="0" placeholder="-" value={p2}
+              onChange={e => setP2(e.target.value)} onBlur={() => handleSave()} className="score-input" />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -115,7 +141,7 @@ const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPla
     }
   }, [readOnly, historyMatches, historyPlayers]);
 
-  const updateScore = (matchId, s1, s2) => {
+  const updateScore = (matchId, s1, s2, pen1 = null, pen2 = null) => {
     if (readOnly) return;
     const updatedMatches = [...matches];
     const matchIndex = updatedMatches.findIndex(m => m.id === matchId);
@@ -124,19 +150,23 @@ const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPla
     const match = updatedMatches[matchIndex];
     match.score1 = s1;
     match.score2 = s2;
-    
+    match.pen1 = pen1;
+    match.pen2 = pen2;
+
     // Determine winner
     if (s1 > s2) match.winner = match.p1;
     else if (s2 > s1) match.winner = match.p2;
-    else {
-      alert('Empate! Em campeonatos de Mata-mata, insira o placar após os pênaltis/prorrogação.');
+    else if (pen1 != null && pen2 != null && pen1 !== pen2) {
+      match.winner = pen1 > pen2 ? match.p1 : match.p2;
+    } else {
+      // Tied with no valid penalty info yet — wait
       return;
     }
 
-    // Process advancement logic
     processAdvancement(updatedMatches, match);
-    
+
     setMatches(updatedMatches);
+
     localStorage.setItem('tournamentMatches', JSON.stringify(updatedMatches));
   };
 
