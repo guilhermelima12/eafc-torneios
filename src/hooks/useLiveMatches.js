@@ -58,11 +58,8 @@ export const useLiveMatches = () => {
   }, []);
 
   const finishLive = useCallback(async (matchKey) => {
-    const current = liveMatches.find(m => m.match_key === matchKey);
-    if (!current) return null;
     await supabase.from('live_matches').delete().eq('match_key', matchKey);
-    return { score1: current.score1, score2: current.score2 };
-  }, [liveMatches]);
+  }, []);
 
   return { liveMatches, getLiveMatch, startLive, updateScore, finishLive };
 };

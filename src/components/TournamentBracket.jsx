@@ -361,10 +361,10 @@ const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPla
     }
   };
 
-  const handleLiveFinish = async (matchKey) => {
-    const result = await finishLive(matchKey);
-    if (result && activeLiveMatch?._matchId != null) {
-      updateScore(activeLiveMatch._matchId, result.score1, result.score2);
+  const handleLiveFinish = async (matchKey, s1, s2) => {
+    await finishLive(matchKey);
+    if (activeLiveMatch?._matchId != null) {
+      updateScore(activeLiveMatch._matchId, s1, s2);
     }
     setActiveLiveMatch(null);
   };

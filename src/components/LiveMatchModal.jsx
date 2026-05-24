@@ -34,7 +34,7 @@ const LiveMatchModal = ({ liveMatch, onUpdateScore, onFinish, onClose }) => {
     if (!window.confirm(
       `Finalizar ${liveMatch.p1_name} ${score1} – ${score2} ${liveMatch.p2_name}?\n\nEsse placar será registrado no torneio.`
     )) return;
-    await onFinish(liveMatch.match_key);
+    await onFinish(liveMatch.match_key, score1, score2);
     onClose();
   };
 

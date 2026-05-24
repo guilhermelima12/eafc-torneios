@@ -166,10 +166,10 @@ const TournamentGroups = ({
     if (updated) setActiveLiveMatch(prev => ({ ...updated, _matchId: prev._matchId }));
   }, [liveMatches, activeLiveMatch?.match_key]);
 
-  const handleLiveFinish = async (matchKey) => {
-    const result = await finishLive(matchKey);
-    if (result && activeLiveMatch?._matchId != null) {
-      updateMatchScore(activeLiveMatch._matchId, String(result.score1), String(result.score2));
+  const handleLiveFinish = async (matchKey, s1, s2) => {
+    await finishLive(matchKey);
+    if (activeLiveMatch?._matchId != null) {
+      updateMatchScore(activeLiveMatch._matchId, String(s1), String(s2));
     }
     setActiveLiveMatch(null);
   };
