@@ -243,35 +243,31 @@ const TournamentHistoryView = () => {
         </div>
       )}
 
-      {/* Knockout bracket */}
       {fmt !== 'league' && (
         <div>
           <h3 style={{ color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '2rem', textAlign: 'center' }}>
             Fase Eliminatória
           </h3>
-          {localBracketMatches && localBracketMatches.length > 0 ? (
+          {(localBracketMatches && localBracketMatches.length > 0) || editMode ? (
             <TournamentBracket
               readOnly={!editMode}
-              historyMatches={localBracketMatches}
+              historyMatches={localBracketMatches || []}
               historyPlayers={tournament.players}
               onDataChange={editMode ? handleBracketChange : null}
             />
-          ) : editMode ? (
-            <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
-              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
-                Nenhuma partida de eliminatórias encontrada. <br />
-                Se o torneio teve fase eliminatória, os dados não foram salvos nesta versão.
-              </p>
-            </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
-              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
+              <p style={{ color: 'var(--text-secondary)', margin: '0 0 1rem' }}>
                 Detalhes das partidas não disponíveis para este torneio (salvo em versão anterior).
+              </p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>
+                Ative o <strong>Modo Edição</strong> para inserir os resultados manualmente.
               </p>
             </div>
           )}
         </div>
       )}
+
 
     </div>
   );

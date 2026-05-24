@@ -108,11 +108,19 @@ const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPla
 
   useEffect(() => {
     if (historyPlayers) setPlayers(historyPlayers);
-    if (historyMatches) {
+
+    if (historyMatches && historyMatches.length > 0) {
+      // Load existing match data
       setMatches(historyMatches);
       const finalMatch = historyMatches.reduce((max, m) => m.round > max.round ? m : max, historyMatches[0]);
       if (finalMatch && finalMatch.winner) setChampion(finalMatch.winner);
+    } else if (!readOnly && historyPlayers && historyPlayers.length > 0) {
+      // Edit mode with no bracket data yet — generate bracket from players
+      const initialMatches = generateKnockoutMatches(historyPlayers);
+      setMatches(initialMatches);
+      if (onDataChange) onDataChange(initialMatches);
     }
+
     if (readOnly) return;
     // history edit mode: data already loaded above, no localStorage needed
     if (historyPlayers) return;
@@ -120,15 +128,12 @@ const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPla
     const savedPlayers = localStorage.getItem('tournamentPlayers');
     const savedMatches = localStorage.getItem('tournamentMatches');
     const savedChampion = localStorage.getItem('tournamentChampion');
-    
-    if (savedChampion) {
-      setChampion(JSON.parse(savedChampion));
-    }
+
+    if (savedChampion) setChampion(JSON.parse(savedChampion));
 
     if (savedPlayers) {
       const p = JSON.parse(savedPlayers);
       setPlayers(p);
-      
       if (savedMatches) {
         setMatches(JSON.parse(savedMatches));
       } else {
