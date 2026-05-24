@@ -119,29 +119,54 @@ const TournamentHistoryView = () => {
     load();
   }, [id]);
 
+  // Track the latest payload so we can flush immediately on exit
+  const pendingPayload = React.useRef({});
+
   const saveToSupabase = useCallback(async (payload) => {
     setSaving(true);
-    await supabase.from('tournaments').update(payload).eq('id', id);
+    const { error } = await supabase.from('tournaments').update(payload).eq('id', id);
     setSaving(false);
-    setSavedMsg(true);
-    setTimeout(() => setSavedMsg(false), 2000);
+    if (!error) {
+      setSavedMsg(true);
+      setTimeout(() => setSavedMsg(false), 2000);
+    }
   }, [id]);
 
-  const debouncedSave = useSaveDebounce(saveToSupabase);
+  const debouncedSave = useSaveDebounce(saveToSupabase, 600);
 
   const handleGroupsChange = useCallback((groups, matches) => {
     setLocalGroups(groups);
     setLocalGroupMatches(matches);
-    debouncedSave({ groups_data: groups, group_matches: matches });
+    const payload = { groups_data: groups, group_matches: matches };
+    pendingPayload.current = { ...pendingPayload.current, ...payload };
+    debouncedSave(payload);
   }, [debouncedSave]);
 
   const handleBracketChange = useCallback((bracketMatches) => {
     setLocalBracketMatches(bracketMatches);
-    // Also update champion if final match has a winner
-    const finalMatch = bracketMatches.reduce((max, m) => m.round > max.round ? m : max, bracketMatches[0]);
+    const finalMatch = bracketMatches.length > 0
+      ? bracketMatches.reduce((max, m) => m.round > max.round ? m : max, bracketMatches[0])
+      : null;
     const champion = finalMatch?.winner || null;
-    debouncedSave({ bracket_matches: bracketMatches, ...(champion ? { champion } : {}) });
+    const payload = { bracket_matches: bracketMatches, ...(champion ? { champion } : {}) };
+    pendingPayload.current = { ...pendingPayload.current, ...payload };
+    debouncedSave(payload);
   }, [debouncedSave]);
+
+  // Flush any pending changes immediately when exiting edit mode
+  const handleToggleEditMode = useCallback(() => {
+    setEditMode(prev => {
+      if (prev) {
+        // Exiting edit mode — flush pending saves immediately
+        const payload = pendingPayload.current;
+        if (Object.keys(payload).length > 0) {
+          saveToSupabase(payload);
+          pendingPayload.current = {};
+        }
+      }
+      return !prev;
+    });
+  }, [saveToSupabase]);
 
   // MUST be before early return — hooks cannot be called conditionally
   const qualifiedPlayers = React.useMemo(() => {
@@ -195,7 +220,7 @@ const TournamentHistoryView = () => {
           {saving && <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Salvando...</span>}
           {savedMsg && <span style={{ fontSize: '0.8rem', color: 'var(--accent-primary)' }}>✓ Salvo</span>}
           <button
-            onClick={() => setEditMode(m => !m)}
+            onClick={handleToggleEditMode}
             className="btn-secondary"
             style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '0.9rem', color: editMode ? '#fbbf24' : 'var(--text-secondary)', borderColor: editMode ? 'rgba(251,191,36,0.4)' : 'var(--border-color)' }}
           >
