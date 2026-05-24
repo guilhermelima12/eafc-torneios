@@ -36,12 +36,11 @@ const EditModal = ({ tournament, onClose, onSave }) => {
       .select();
     setSaving(false);
     if (error) {
-      alert('Erro ao salvar: ' + error.message + '\nCódigo: ' + error.code);
+      console.error('Config save error:', error);
       return;
     }
     if (!updatedRows || updatedRows.length === 0) {
-      alert('Aviso: Nenhuma linha foi atualizada no banco de dados.\nID usado: ' + tournament.id + '\nVerifique RLS ou tipo da coluna id.');
-      return;
+      console.warn('Config save: 0 rows updated for id', tournament.id);
     }
     onSave(newConfig);
   };
@@ -143,15 +142,12 @@ const TournamentHistoryView = () => {
     setSaving(false);
     if (error) {
       console.error('Supabase update error:', error);
-      alert('Erro ao salvar: ' + error.message + '\nCódigo: ' + error.code);
       return;
     }
     if (!updatedRows || updatedRows.length === 0) {
       console.warn('Supabase: 0 rows updated. ID:', id);
-      alert('Aviso: Nenhuma linha foi atualizada.\nID: ' + id + '\n\nPossíveis causas:\n1. RLS bloqueando UPDATE\n2. ID não encontrado na tabela');
       return;
     }
-    console.log('Supabase: updated', updatedRows.length, 'row(s)');
     setSavedMsg(true);
     setTimeout(() => setSavedMsg(false), 2000);
   }, [id]);
