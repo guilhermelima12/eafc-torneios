@@ -1,6 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { Users, Plus, Trash2, Trophy, AlertCircle, Loader, Pencil, Check, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Users, Plus, Trash2, Trophy, AlertCircle, Loader, Pencil, Check, X, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+
+// ── Helper: ordered standings from a tournament record ─────────
+const getTournamentStandings = (t) => {
+  const fmt = t.config?.format;
+  if (fmt === 'league') {
+    return (t.groups_data?.[0] || t.players || []).filter(Boolean);
+  }
+  const bMatches = t.bracket_matches || [];
+  const qualified = t.players || [];
+  const gData = t.groups_data;
+  const standings = [];
+  const added = new Set();
+  if (bMatches.length > 0) {
+    bMatches
+      .filter(m => m.winner)
+      .sort((a, b) => b.round - a.round)
+      .forEach(match => {
+        const winner = match.winner;
+        const loser = match.p1?.id === winner?.id ? match.p2 : match.p1;
+        if (winner?.name && !added.has(winner.name)) { standings.push(winner); added.add(winner.name); }
+        if (loser?.name && !added.has(loser.name)) { standings.push(loser); added.add(loser.name); }
+      });
+  }
+  qualified.forEach(p => {
+    if (p?.name && !added.has(p.name)) { standings.push(p); added.add(p.name); }
+  });
+  if (gData) {
+    const elim = [];
+    gData.forEach(group => group.forEach((p, idx) => {
+      if (p?.name && !added.has(p.name)) elim.push({ player: p, rank: idx });
+    }));
+    elim.sort((a, b) => a.rank - b.rank)
+        .forEach(({ player }) => { if (!added.has(player.name)) { standings.push(player); added.add(player.name); } });
+  }
+  return standings;
+};
 
 const PlayersManager = () => {
   const [registeredPlayers, setRegisteredPlayers] = useState([]);
@@ -13,6 +49,8 @@ const PlayersManager = () => {
   const [dbError, setDbError] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editSeedValue, setEditSeedValue] = useState('');
+  const [recalculating, setRecalculating] = useState(false);
+  const [recalcMsg, setRecalcMsg] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -26,7 +64,7 @@ const PlayersManager = () => {
 
       const { data: tourns } = await supabase
         .from('tournaments')
-        .select('champion');
+        .select('*');
 
       if (pErr) {
         setDbError(pErr.message);
@@ -38,6 +76,56 @@ const PlayersManager = () => {
       setLoading(false);
     };
     loadData();
+  }, []);
+
+  // ── Recalculate seeds from all Hall da Fama tournaments ────────
+  const recalcularSeeds = useCallback(async () => {
+    setRecalculating(true);
+    setRecalcMsg(null);
+
+    const { data: allTournaments } = await supabase.from('tournaments').select('*');
+    if (!allTournaments || allTournaments.length === 0) {
+      setRecalcMsg({ type: 'warn', text: 'Nenhum torneio encontrado na galeria.' });
+      setRecalculating(false);
+      return;
+    }
+
+    // Accumulate position totals per player name
+    const posMap = {};
+    allTournaments.forEach(t => {
+      const stds = getTournamentStandings(t);
+      stds.forEach((player, idx) => {
+        if (!player?.name) return;
+        if (!posMap[player.name]) posMap[player.name] = { total: 0, count: 0 };
+        posMap[player.name].total += (idx + 1);
+        posMap[player.name].count += 1;
+      });
+    });
+
+    // Sort ascending by average position (best avg = seed 1)
+    const ranked = Object.entries(posMap)
+      .map(([name, { total, count }]) => ({ name, avg: total / count }))
+      .sort((a, b) => a.avg - b.avg);
+
+    // Write new seeds
+    const { data: dbPlayers } = await supabase.from('players').select('id, name');
+    if (dbPlayers && ranked.length > 0) {
+      const updates = ranked.map((entry, idx) => {
+        const dbPlayer = dbPlayers.find(db => db.name === entry.name);
+        return dbPlayer
+          ? supabase.from('players').update({ seed: idx + 1 }).eq('id', dbPlayer.id)
+          : Promise.resolve();
+      });
+      await Promise.all(updates);
+    }
+
+    // Reload players with updated seeds
+    const { data: fresh } = await supabase.from('players').select('*').order('seed', { ascending: true });
+    if (fresh) setRegisteredPlayers(fresh);
+
+    setRecalcMsg({ type: 'ok', text: `Seeds atualizados com base em ${allTournaments.length} torneio(s)! ${ranked.map((r, i) => `#${i+1} ${r.name} (média ${r.avg.toFixed(1)})`).join(' · ')}` });
+    setRecalculating(false);
+    setTimeout(() => setRecalcMsg(null), 8000);
   }, []);
 
   const winsMap = tournaments.reduce((acc, t) => {
@@ -175,9 +263,37 @@ const PlayersManager = () => {
 
       {/* GERENCIAR JOGADORES */}
       <div className="glass-panel">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-          <Users size={28} color="var(--accent-secondary)" />
-          <h2 style={{ margin: 0 }}>Jogadores Cadastrados</h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Users size={28} color="var(--accent-secondary)" />
+            <h2 style={{ margin: 0 }}>Jogadores Cadastrados</h2>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+            <button
+              onClick={recalcularSeeds}
+              disabled={recalculating || loading}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px',
+                background: 'rgba(96,239,255,0.08)', border: '1px solid rgba(96,239,255,0.3)',
+                color: 'var(--accent-secondary)', borderRadius: '8px', cursor: recalculating ? 'wait' : 'pointer',
+                fontFamily: 'Outfit', fontSize: '0.85rem', fontWeight: 600, opacity: recalculating ? 0.7 : 1,
+                transition: 'all 0.2s'
+              }}
+            >
+              <RefreshCw size={15} style={{ animation: recalculating ? 'spin 1s linear infinite' : 'none' }} />
+              {recalculating ? 'Recalculando...' : 'Recalcular Seeds'}
+            </button>
+            {recalcMsg && (
+              <div style={{
+                fontSize: '0.78rem', padding: '6px 12px', borderRadius: '8px', maxWidth: '340px', textAlign: 'right',
+                background: recalcMsg.type === 'ok' ? 'rgba(0,255,135,0.08)' : 'rgba(255,200,0,0.08)',
+                color: recalcMsg.type === 'ok' ? 'var(--accent-primary)' : '#fbbf24',
+                border: `1px solid ${recalcMsg.type === 'ok' ? 'rgba(0,255,135,0.2)' : 'rgba(255,200,0,0.2)'}`
+              }}>
+                {recalcMsg.text}
+              </div>
+            )}
+          </div>
         </div>
 
         {dbError && (
