@@ -8,8 +8,8 @@ import { useAuth } from '../context/AuthContext';
 
 /* ── Layout Constants ─────────────────────────────────────────── */
 const CARD_W   = 216;   // match card width
-const CARD_H   = 88;    // match card height (must match actual rendered height)
-const BASE     = 120;   // slot height in round-0 (CARD_H + gap)
+const CARD_H   = 106;   // match card height (88 content + 18 iniciar strip)
+const BASE     = 144;   // slot height in round-0 (CARD_H + gap)
 const CONN_W   = 60;    // SVG connector column width
 const LABEL_H  = 28;    // height of the round label row
 
@@ -176,13 +176,17 @@ const MatchCard = ({ match, onUpdateScore, readOnly, liveMatch, onStartLive }) =
 
   return (
     <div style={{ position: 'relative', paddingTop: isLive ? '30px' : '0' }}>
-      {/* Live badge above card */}
+      {/* Live badge above card — clickable for admin to re-open panel */}
       {isLive && (
-        <div style={{
-          position: 'absolute', top: '0', left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 10, whiteSpace: 'nowrap'
-        }}>
+        <div
+          onClick={onStartLive ? () => onStartLive(match, true) : undefined}
+          style={{
+            position: 'absolute', top: '0', left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 10, whiteSpace: 'nowrap',
+            cursor: onStartLive ? 'pointer' : 'default',
+          }}
+        >
           <LiveScoreBadge liveMatch={liveMatch} />
         </div>
       )}
@@ -210,7 +214,7 @@ const MatchCard = ({ match, onUpdateScore, readOnly, liveMatch, onStartLive }) =
 
         {/* Penalty row */}
         {isTied && !isFinished && !readOnly && (
-          <div style={{ padding: '8px 10px', background: 'rgba(251,191,36,0.06)', borderTop: '1px solid rgba(251,191,36,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <div style={{ padding: '6px 10px', background: 'rgba(251,191,36,0.06)', borderTop: '1px solid rgba(251,191,36,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
             <span style={{ fontSize: '0.72rem', color: '#fbbf24', fontWeight: 600, whiteSpace: 'nowrap' }}>Pênaltis</span>
             <input type="number" min="0" placeholder="—" value={p1}
               onChange={e => setP1(e.target.value)} onBlur={() => save()} className="score-input"
@@ -221,45 +225,26 @@ const MatchCard = ({ match, onUpdateScore, readOnly, liveMatch, onStartLive }) =
               style={{ width: '38px', textAlign: 'center', fontSize: '0.85rem', padding: '2px 4px' }} />
           </div>
         )}
+
+        {/* INICIAR strip — compact bottom bar, always inside card bounds */}
+        {!readOnly && !isFinished && match.p1 && match.p2 && onStartLive && !isLive && (
+          <div
+            role="button"
+            onClick={() => onStartLive(match)}
+            style={{
+              height: '18px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+              background: 'rgba(96,239,255,0.05)',
+              borderTop: '1px solid rgba(96,239,255,0.12)',
+              cursor: 'pointer',
+              transition: 'background 0.2s',
+            }}
+          >
+            <Play size={8} fill="currentColor" color="var(--accent-secondary)" />
+            <span style={{ fontSize: '0.6rem', color: 'var(--accent-secondary)', fontWeight: 700, letterSpacing: '1px' }}>INICIAR AO VIVO</span>
+          </div>
+        )}
       </div>
-
-      {/* INICIAR PARTIDA — absolutely positioned below card, no layout impact */}
-      {!readOnly && !isFinished && match.p1 && match.p2 && onStartLive && !isLive && (
-        <button
-          onClick={() => onStartLive(match)}
-          style={{
-            position: 'absolute', bottom: '-26px', left: '50%', transform: 'translateX(-50%)',
-            whiteSpace: 'nowrap', zIndex: 15,
-            padding: '3px 12px', display: 'flex', alignItems: 'center', gap: '5px',
-            background: 'rgba(10,14,26,0.95)', border: '1px solid rgba(96,239,255,0.3)',
-            color: 'var(--accent-secondary)', cursor: 'pointer', borderRadius: '20px',
-            fontFamily: 'Outfit', fontSize: '0.7rem', fontWeight: 700,
-            transition: 'all 0.2s', letterSpacing: '0.5px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-          }}
-        >
-          <Play size={10} fill="currentColor" /> INICIAR
-        </button>
-      )}
-
-      {/* ABRIR PAINEL — same approach when live */}
-      {!readOnly && isLive && onStartLive && (
-        <button
-          onClick={() => onStartLive(match, true)}
-          style={{
-            position: 'absolute', bottom: '-26px', left: '50%', transform: 'translateX(-50%)',
-            whiteSpace: 'nowrap', zIndex: 15,
-            padding: '3px 12px', display: 'flex', alignItems: 'center', gap: '5px',
-            background: 'rgba(10,14,26,0.95)', border: '1px solid rgba(255,40,40,0.4)',
-            color: '#ff4b4b', cursor: 'pointer', borderRadius: '20px',
-            fontFamily: 'Outfit', fontSize: '0.7rem', fontWeight: 700,
-            transition: 'all 0.2s',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-          }}
-        >
-          <Play size={10} fill="currentColor" /> ABRIR PAINEL
-        </button>
-      )}
     </div>
   );
 };
