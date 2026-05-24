@@ -46,7 +46,12 @@ const TournamentHistoryView = () => {
         <div>
           <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>Acervo Histórico: {tournament.config.name}</h2>
           <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            {tournament.date} • {tournament.config.participants} Participantes • {tournament.config.format === 'knockout' ? 'Mata-Mata' : 'Grupos + Eliminatórias'}
+            {tournament.date} • {tournament.config.participants} Participantes • {
+              tournament.config.format === 'knockout' ? 'Mata-Mata' :
+              tournament.config.format === 'league' ? 'Pontos Corridos' :
+              'Grupos + Eliminatórias'
+            }
+            {tournament.config.legsMode === 'double' ? ' • Ida e Volta' : ''}
           </p>
         </div>
       </div>
@@ -90,17 +95,15 @@ const TournamentHistoryView = () => {
         </div>
       )}
 
-      {/* Reconstrução das Chaves/Grupos */}
-      <div>
-        <h3 style={{ color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '2rem' }}>
-          Tabelas e Confrontos Oficiais
-        </h3>
-
-        {tournament.config.format === 'groups' && tournament.groups_data && (
+        {/* League / Groups table */}
+        {(tournament.config.format === 'groups' || tournament.config.format === 'league') && tournament.groups_data && (
           <div style={{ marginBottom: '4rem' }}>
-            <h4 style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Fase de Grupos</h4>
-            <TournamentGroups 
+            <h4 style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              {tournament.config.format === 'league' ? 'Classificação Final' : 'Fase de Grupos'}
+            </h4>
+            <TournamentGroups
               readOnly={true}
+              leagueOnly={tournament.config.format === 'league'}
               historyGroups={tournament.groups_data}
               historyMatches={tournament.group_matches}
               players={tournament.players}
@@ -108,25 +111,27 @@ const TournamentHistoryView = () => {
           </div>
         )}
 
-        {tournament.bracket_matches && tournament.bracket_matches.length > 0 ? (
-          <div>
-            <h4 style={{ color: 'var(--text-secondary)', marginBottom: '1rem', textAlign: 'center' }}>Fase Eliminatória</h4>
-            <TournamentBracket 
-              readOnly={true}
-              historyMatches={tournament.bracket_matches}
-              historyPlayers={tournament.players}
-            />
-          </div>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
-            <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
-              Detalhes das partidas não disponíveis para este torneio (salvo em versão anterior).
-            </p>
-          </div>
+        {/* Knockout bracket — only for formats that have one */}
+        {tournament.config.format !== 'league' && (
+          tournament.bracket_matches && tournament.bracket_matches.length > 0 ? (
+            <div>
+              <h4 style={{ color: 'var(--text-secondary)', marginBottom: '1rem', textAlign: 'center' }}>Fase Eliminatória</h4>
+              <TournamentBracket
+                readOnly={true}
+                historyMatches={tournament.bracket_matches}
+                historyPlayers={tournament.players}
+              />
+            </div>
+          ) : tournament.config.format === 'knockout' && (
+            <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
+              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
+                Detalhes das partidas não disponíveis para este torneio (salvo em versão anterior).
+              </p>
+            </div>
+          )
         )}
 
       </div>
-
     </div>
   );
 };

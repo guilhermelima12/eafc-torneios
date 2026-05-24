@@ -11,8 +11,8 @@ const getNumGroups = (count) => {
 
 const emptyStats = () => ({ pts: 0, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0 });
 
-const generateGroupsAndMatches = (players, legsMode = 'single') => {
-  const numGroups = getNumGroups(players.length);
+const generateGroupsAndMatches = (players, legsMode = 'single', forceOneGroup = false) => {
+  const numGroups = forceOneGroup ? 1 : getNumGroups(players.length);
   const groups = Array.from({ length: numGroups }, () => []);
 
   players.forEach((p, i) => {
@@ -61,7 +61,7 @@ const TournamentGroups = ({
       setGroupsData(JSON.parse(savedGroups));
       setMatches(JSON.parse(savedMatches));
     } else {
-      const { groups, matches: newMatches } = generateGroupsAndMatches(players, legsMode);
+    const { groups, matches: newMatches } = generateGroupsAndMatches(players, legsMode, leagueOnly);
       setGroupsData(groups);
       setMatches(newMatches);
       localStorage.setItem('tournamentGroups', JSON.stringify(groups));
