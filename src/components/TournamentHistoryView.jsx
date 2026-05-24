@@ -215,15 +215,17 @@ const TournamentHistoryView = () => {
         </div>
       )}
 
-      {/* Champion */}
-      <div className="glass-panel" style={{ marginBottom: '3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '3rem 1rem', background: 'linear-gradient(to bottom, rgba(0,255,135,0.1), rgba(0,0,0,0.4))', border: '1px solid var(--accent-primary)', boxShadow: '0 0 30px rgba(0,255,135,0.1)' }}>
-        <Trophy size={64} color="#ffd700" style={{ marginBottom: '1rem', filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.5))' }} />
-        <h3 style={{ color: '#ffd700', margin: 0, fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '2px' }}>Campeão</h3>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '1.5rem' }}>
-          <TeamLogo team={tournament.champion?.team} size={80} />
-          <h1 style={{ fontSize: '3.5rem', margin: 0, color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{tournament.champion?.name}</h1>
+      {/* Champion — for league: top of standings; for knockout/groups: only bracket shows champion */}
+      {fmt === 'league' && tournament.champion && (
+        <div className="glass-panel" style={{ marginBottom: '3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '3rem 1rem', background: 'linear-gradient(to bottom, rgba(0,255,135,0.1), rgba(0,0,0,0.4))', border: '1px solid var(--accent-primary)', boxShadow: '0 0 30px rgba(0,255,135,0.1)' }}>
+          <Trophy size={64} color="#ffd700" style={{ marginBottom: '1rem', filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.5))' }} />
+          <h3 style={{ color: '#ffd700', margin: 0, fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '2px' }}>Campeão</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '1.5rem' }}>
+            <TeamLogo team={tournament.champion?.team} size={80} />
+            <h1 style={{ fontSize: '3.5rem', margin: 0, color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{tournament.champion?.name}</h1>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Knockout: participant list */}
       {tournament.players && fmt === 'knockout' && !editMode && (
