@@ -34,9 +34,11 @@ const getPlayerGoals = (playerName, matches) => {
     const isP1 = m.p1?.name === playerName;
     const isP2 = m.p2?.name === playerName;
     if (!isP1 && !isP2) return;
-    if (m.score1 == null || m.score2 == null) return;
-    const myGoals = isP1 ? m.score1 : m.score2;
-    const oppGoals = isP1 ? m.score2 : m.score1;
+    const s1 = Number(m.score1);
+    const s2 = Number(m.score2);
+    if (isNaN(s1) || isNaN(s2) || m.score1 == null || m.score2 == null) return;
+    const myGoals = isP1 ? s1 : s2;
+    const oppGoals = isP1 ? s2 : s1;
     gf += myGoals; ga += oppGoals;
     if (myGoals > oppGoals) wins++;
     else if (myGoals < oppGoals) losses++;
