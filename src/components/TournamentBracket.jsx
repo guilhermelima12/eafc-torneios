@@ -221,39 +221,45 @@ const MatchCard = ({ match, onUpdateScore, readOnly, liveMatch, onStartLive }) =
               style={{ width: '38px', textAlign: 'center', fontSize: '0.85rem', padding: '2px 4px' }} />
           </div>
         )}
-
-        {/* Start Live button — admin only, match not finished, both players defined */}
-        {!readOnly && !isFinished && match.p1 && match.p2 && onStartLive && !isLive && (
-          <button
-            onClick={() => onStartLive(match)}
-            style={{
-              width: '100%', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-              background: 'rgba(96,239,255,0.05)', borderTop: '1px solid rgba(96,239,255,0.15)',
-              border: 'none', color: 'var(--accent-secondary)', cursor: 'pointer',
-              fontFamily: 'Outfit', fontSize: '0.75rem', fontWeight: 600,
-              transition: 'background 0.2s', letterSpacing: '0.5px',
-            }}
-          >
-            <Play size={12} fill="currentColor" /> INICIAR PARTIDA
-          </button>
-        )}
-
-        {/* Re-open live modal button when match is already live */}
-        {!readOnly && isLive && onStartLive && (
-          <button
-            onClick={() => onStartLive(match, true)}
-            style={{
-              width: '100%', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-              background: 'rgba(255,40,40,0.08)', borderTop: '1px solid rgba(255,40,40,0.2)',
-              border: 'none', color: '#ff4b4b', cursor: 'pointer',
-              fontFamily: 'Outfit', fontSize: '0.75rem', fontWeight: 600,
-              transition: 'background 0.2s',
-            }}
-          >
-            <Play size={12} fill="currentColor" /> ABRIR PAINEL
-          </button>
-        )}
       </div>
+
+      {/* INICIAR PARTIDA — absolutely positioned below card, no layout impact */}
+      {!readOnly && !isFinished && match.p1 && match.p2 && onStartLive && !isLive && (
+        <button
+          onClick={() => onStartLive(match)}
+          style={{
+            position: 'absolute', bottom: '-26px', left: '50%', transform: 'translateX(-50%)',
+            whiteSpace: 'nowrap', zIndex: 15,
+            padding: '3px 12px', display: 'flex', alignItems: 'center', gap: '5px',
+            background: 'rgba(10,14,26,0.95)', border: '1px solid rgba(96,239,255,0.3)',
+            color: 'var(--accent-secondary)', cursor: 'pointer', borderRadius: '20px',
+            fontFamily: 'Outfit', fontSize: '0.7rem', fontWeight: 700,
+            transition: 'all 0.2s', letterSpacing: '0.5px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+          }}
+        >
+          <Play size={10} fill="currentColor" /> INICIAR
+        </button>
+      )}
+
+      {/* ABRIR PAINEL — same approach when live */}
+      {!readOnly && isLive && onStartLive && (
+        <button
+          onClick={() => onStartLive(match, true)}
+          style={{
+            position: 'absolute', bottom: '-26px', left: '50%', transform: 'translateX(-50%)',
+            whiteSpace: 'nowrap', zIndex: 15,
+            padding: '3px 12px', display: 'flex', alignItems: 'center', gap: '5px',
+            background: 'rgba(10,14,26,0.95)', border: '1px solid rgba(255,40,40,0.4)',
+            color: '#ff4b4b', cursor: 'pointer', borderRadius: '20px',
+            fontFamily: 'Outfit', fontSize: '0.7rem', fontWeight: 700,
+            transition: 'all 0.2s',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+          }}
+        >
+          <Play size={10} fill="currentColor" /> ABRIR PAINEL
+        </button>
+      )}
     </div>
   );
 };
