@@ -262,7 +262,7 @@ const TournamentGroups = ({
         </div>
       ))}
 
-      {isAllMatchesFinished && !readOnly && (
+      {isAllMatchesFinished && !readOnly && typeof onFinishGroups === 'function' && (
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem', animation: 'fadeIn 0.5s ease' }}>
           {leagueOnly ? (
             <div style={{ textAlign: 'center' }}>
