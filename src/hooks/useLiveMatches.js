@@ -38,7 +38,7 @@ export const useLiveMatches = () => {
 
   const startLive = useCallback(async (match, round) => {
     const matchKey = makeKey(round, match.p1, match.p2);
-    const { error } = await supabase.from('live_matches').upsert({
+    const newRow = {
       match_key: matchKey,
       p1_name: match.p1?.name,
       p2_name: match.p2?.name,
@@ -48,16 +48,23 @@ export const useLiveMatches = () => {
       score2: 0,
       round,
       status: 'live',
-    }, { onConflict: 'match_key' });
+    };
+    const { error } = await supabase.from('live_matches').upsert(newRow, { onConflict: 'match_key' });
     if (error) { console.error('startLive error:', error); return null; }
+    // Optimistically add to local state so badge appears immediately
+    setLiveMatches(prev => [...prev.filter(m => m.match_key !== matchKey), newRow]);
     return matchKey;
   }, []);
 
   const updateScore = useCallback(async (matchKey, score1, score2) => {
+    // Optimistically update local state so badge reflects new score immediately
+    setLiveMatches(prev => prev.map(m => m.match_key === matchKey ? { ...m, score1, score2 } : m));
     await supabase.from('live_matches').update({ score1, score2 }).eq('match_key', matchKey);
   }, []);
 
   const finishLive = useCallback(async (matchKey) => {
+    // Optimistically remove from local state immediately (no Realtime wait)
+    setLiveMatches(prev => prev.filter(m => m.match_key !== matchKey));
     await supabase.from('live_matches').delete().eq('match_key', matchKey);
   }, []);
 

@@ -175,10 +175,14 @@ const MatchCard = ({ match, onUpdateScore, readOnly, liveMatch, onStartLive }) =
   const isLive = !!liveMatch;
 
   return (
-    <div style={{ position: 'relative' }}>
-      {/* Live badge overlay (top of card) */}
+    <div style={{ position: 'relative', paddingTop: isLive ? '30px' : '0' }}>
+      {/* Live badge above card */}
       {isLive && (
-        <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', zIndex: 10, whiteSpace: 'nowrap' }}>
+        <div style={{
+          position: 'absolute', top: '0', left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10, whiteSpace: 'nowrap'
+        }}>
           <LiveScoreBadge liveMatch={liveMatch} />
         </div>
       )}
@@ -441,7 +445,7 @@ const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPla
                     const topY = mi * slotH + (slotH - CARD_H) / 2;
                     const liveM = getLiveMatch(match?.round, match?.p1, match?.p2);
                     return (
-                      <div key={id} style={{ position: 'absolute', top: topY, left: 0, width: CARD_W, paddingTop: liveM ? '18px' : '0' }}>
+                      <div key={id} style={{ position: 'absolute', top: topY, left: 0, width: CARD_W }}>
                         {match
                           ? <MatchCard
                               match={match}
