@@ -53,13 +53,9 @@ export const useLiveMatches = () => {
     return matchKey;
   }, []);
 
-  const updateScore = useCallback(async (matchKey, side, delta) => {
-    const current = liveMatches.find(m => m.match_key === matchKey);
-    if (!current) return;
-    const score1 = side === 'p1' ? Math.max(0, current.score1 + delta) : current.score1;
-    const score2 = side === 'p2' ? Math.max(0, current.score2 + delta) : current.score2;
+  const updateScore = useCallback(async (matchKey, score1, score2) => {
     await supabase.from('live_matches').update({ score1, score2 }).eq('match_key', matchKey);
-  }, [liveMatches]);
+  }, []);
 
   const finishLive = useCallback(async (matchKey) => {
     const current = liveMatches.find(m => m.match_key === matchKey);

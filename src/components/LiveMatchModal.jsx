@@ -11,8 +11,10 @@ const LiveMatchModal = ({ liveMatch, onUpdateScore, onFinish, onClose }) => {
   };
 
   const handleGoal = async (side, delta) => {
+    const newScore1 = side === 'p1' ? Math.max(0, liveMatch.score1 + delta) : liveMatch.score1;
+    const newScore2 = side === 'p2' ? Math.max(0, liveMatch.score2 + delta) : liveMatch.score2;
     if (delta > 0) triggerAnim(side);
-    await onUpdateScore(liveMatch.match_key, side, delta);
+    await onUpdateScore(liveMatch.match_key, newScore1, newScore2);
   };
 
   const handleFinish = async () => {
