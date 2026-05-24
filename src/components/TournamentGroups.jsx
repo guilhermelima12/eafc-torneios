@@ -2,17 +2,9 @@ import React, { useState, useEffect } from 'react';
 import TeamLogo from './TeamLogo';
 import { CheckCircle2 } from 'lucide-react';
 
-const getNumGroups = (count) => {
-  if (count <= 5) return 1;
-  if (count <= 11) return 2;
-  if (count <= 23) return 4;
-  return 8;
-};
-
 const emptyStats = () => ({ pts: 0, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0 });
 
-const generateGroupsAndMatches = (players, legsMode = 'single', forceOneGroup = false) => {
-  const numGroups = forceOneGroup ? 1 : getNumGroups(players.length);
+const generateGroupsAndMatches = (players, legsMode = 'single', numGroups = 2) => {
   const groups = Array.from({ length: numGroups }, () => []);
 
   players.forEach((p, i) => {
@@ -39,10 +31,12 @@ const generateGroupsAndMatches = (players, legsMode = 'single', forceOneGroup = 
 };
 
 const TournamentGroups = ({
-  onDataChange = null, // callback(groups, matches) for history edit mode
+  onDataChange = null,
   players, onFinishGroups,
   readOnly = false, leagueOnly = false,
   legsMode = 'single',
+  numGroups = 2,
+  advancePerGroup = 2,
   historyGroups = null, historyMatches = null
 }) => {
   const [groupsData, setGroupsData] = useState([]);
@@ -66,13 +60,13 @@ const TournamentGroups = ({
       setGroupsData(JSON.parse(savedGroups));
       setMatches(JSON.parse(savedMatches));
     } else {
-      const { groups, matches: newMatches } = generateGroupsAndMatches(players, legsMode, leagueOnly);
+      const { groups, matches: newMatches } = generateGroupsAndMatches(players, legsMode, leagueOnly ? 1 : numGroups);
       setGroupsData(groups);
       setMatches(newMatches);
       localStorage.setItem('tournamentGroups', JSON.stringify(groups));
       localStorage.setItem('tournamentGroupMatches', JSON.stringify(newMatches));
     }
-  }, [players, readOnly, historyGroups, historyMatches, legsMode]);
+  }, [players, readOnly, historyGroups, historyMatches, legsMode, numGroups]);
 
   const recalculateStandings = (currentMatches, currentGroupsData) => {
     const newGroupsData = currentGroupsData.map(group =>
@@ -130,25 +124,18 @@ const TournamentGroups = ({
   const handleAdvance = () => {
     if (readOnly) return;
     const qualified = [];
-    if (groupsData.length === 1) {
-      const group = groupsData[0];
-      const spots = group.length >= 4 ? 4 : 2;
-      for (let i = 0; i < spots && i < group.length; i++) qualified.push(group[i]);
-    } else {
-      groupsData.forEach(group => {
-        qualified.push(group[0]);
-        if (group.length > 1) qualified.push(group[1]);
-      });
-    }
+    groupsData.forEach(group => {
+      for (let i = 0; i < advancePerGroup && i < group.length; i++) {
+        qualified.push(group[i]);
+      }
+    });
     onFinishGroups(qualified);
   };
 
   const isAllMatchesFinished = matches.length > 0 && matches.every(m => m.score1 !== '' && m.score2 !== '');
   const groupNames = ['Grupo A', 'Grupo B', 'Grupo C', 'Grupo D', 'Grupo E', 'Grupo F', 'Grupo G', 'Grupo H'];
-
-  const qualifySpots = groupsData.length === 1
-    ? (groupsData[0]?.length >= 4 ? 4 : 2)
-    : 2;
+  const totalQualified = groupsData.length * advancePerGroup;
+  const qualifySpots = advancePerGroup;
 
   return (
     <div style={{ padding: '2rem 0' }}>

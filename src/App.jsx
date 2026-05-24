@@ -47,16 +47,32 @@ const Dashboard = () => {
   }, []);
 
   const handleFinishGroups = (qualifiedPlayers) => {
-    const firsts = qualifiedPlayers.filter((_, i) => i % 2 === 0);
-    const seconds = qualifiedPlayers.filter((_, i) => i % 2 === 1);
-    const reordered = [...firsts, ...seconds];
-    
-    localStorage.setItem('tournamentPlayers', JSON.stringify(reordered));
+    const ap = config?.advancePerGroup || 2;
+    const numGroups = ap > 0 ? Math.round(qualifiedPlayers.length / ap) : qualifiedPlayers.length;
+
+    // Group qualifiers by their position within each group
+    // qualifiedPlayers order: [A1, A2, ..., B1, B2, ..., ...]
+    const byTier = Array.from({ length: ap }, () => []);
+    for (let g = 0; g < numGroups; g++) {
+      for (let pos = 0; pos < ap; pos++) {
+        const idx = g * ap + pos;
+        if (idx < qualifiedPlayers.length) byTier[pos].push(qualifiedPlayers[idx]);
+      }
+    }
+
+    // Sort each tier by group performance (pts DESC, gd DESC, gf DESC)
+    const sortByPerf = (arr) => [...arr].sort((a, b) => {
+      if ((b.pts ?? 0) !== (a.pts ?? 0)) return (b.pts ?? 0) - (a.pts ?? 0);
+      if ((b.gd  ?? 0) !== (a.gd  ?? 0)) return (b.gd  ?? 0) - (a.gd  ?? 0);
+      return (b.gf ?? 0) - (a.gf ?? 0);
+    });
+
+    // Seeded order: [best 1st, 2nd best 1st, ...all 2nds sorted, ...all 3rds sorted]
+    const seeded = byTier.flatMap(tier => sortByPerf(tier));
+
+    localStorage.setItem('tournamentPlayers', JSON.stringify(seeded));
     localStorage.setItem('groupStageFinished', 'true');
-    
-    // Wipe any stale bracket matches to force a fresh generation for these qualified players
     localStorage.removeItem('tournamentMatches');
-    
     window.location.reload();
   };
 
@@ -274,9 +290,15 @@ const Dashboard = () => {
 
             <div style={{ marginTop: '1rem' }}>
               {phase === 'groups' ? (
-                <TournamentGroups players={players} onFinishGroups={handleFinishGroups} legsMode={config.legsMode || 'single'} />
+                <TournamentGroups
+                  players={players}
+                  onFinishGroups={handleFinishGroups}
+                  legsMode={config.legsMode || 'single'}
+                  numGroups={config.numGroups || 2}
+                  advancePerGroup={config.advancePerGroup || 2}
+                />
               ) : phase === 'league' ? (
-                <TournamentGroups players={players} onFinishGroups={handleFinishGroups} leagueOnly={true} legsMode={config.legsMode || 'single'} />
+                <TournamentGroups players={players} onFinishGroups={handleFinishGroups} leagueOnly={true} legsMode={config.legsMode || 'single'} numGroups={1} advancePerGroup={4} />
               ) : (
                 <TournamentBracket />
               )}

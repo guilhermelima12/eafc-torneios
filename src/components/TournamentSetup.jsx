@@ -9,7 +9,9 @@ const TournamentSetup = () => {
     format: 'groups',
     participants: 8,
     teamSelectionMode: 'manual',
-    legsMode: 'single'
+    legsMode: 'single',
+    numGroups: 2,
+    advancePerGroup: 2,
   });
 
   const handleSubmit = (e) => {
@@ -71,6 +73,51 @@ const TournamentSetup = () => {
             <option value="league" style={{ background: 'var(--bg-secondary)' }}>Pontos Corridos (Liga)</option>
           </select>
         </div>
+
+        {/* Group config — only for groups format */}
+        {formData.format === 'groups' && (() => {
+          const totalQ = formData.numGroups * formData.advancePerGroup;
+          const isStandard = [2, 4, 8].includes(totalQ);
+          const btnStyle = (active) => ({
+            flex: 1, padding: '10px', borderRadius: '8px', cursor: 'pointer',
+            fontFamily: 'Outfit', fontWeight: 600, transition: 'all 0.2s',
+            border: `1px solid ${active ? 'var(--accent-secondary)' : 'var(--border-color)'}`,
+            background: active ? 'rgba(96,239,255,0.1)' : 'transparent',
+            color: active ? 'var(--accent-secondary)' : 'var(--text-secondary)',
+          });
+          return (
+            <>
+              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: '180px' }}>
+                  <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Número de Grupos</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    {[2, 3, 4].map(n => (
+                      <button key={n} type="button" onClick={() => setFormData(f => ({...f, numGroups: n}))} style={btnStyle(formData.numGroups === n)}>{n} grupos</button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ flex: 1, minWidth: '180px' }}>
+                  <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Classificados por Grupo</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    {[1, 2, 3].map(n => (
+                      <button key={n} type="button" onClick={() => setFormData(f => ({...f, advancePerGroup: n}))} style={btnStyle(formData.advancePerGroup === n)}>{n}º lugar</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div style={{
+                padding: '10px 16px', borderRadius: '8px', fontSize: '0.88rem',
+                background: isStandard ? 'rgba(0,255,135,0.07)' : 'rgba(251,191,36,0.07)',
+                border: `1px solid ${isStandard ? 'rgba(0,255,135,0.2)' : 'rgba(251,191,36,0.25)'}`,
+                color: isStandard ? 'var(--accent-primary)' : '#fbbf24',
+              }}>
+                {totalQ} classificados → {isStandard
+                  ? `Bracket de ${totalQ} (${totalQ === 2 ? 'Final direta' : totalQ === 4 ? 'Semis + Final' : 'QF + Semis + Final'}) ✓`
+                  : `Bracket de ${totalQ} com WO (não é potência de 2)`}
+              </div>
+            </>
+          );
+        })()}
 
         {/* Legs Mode */}
         <div>
