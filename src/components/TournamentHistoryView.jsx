@@ -1,14 +1,123 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Trophy, ArrowLeft } from 'lucide-react';
+import { Trophy, ArrowLeft, Pencil, X, Check } from 'lucide-react';
 import TeamLogo from './TeamLogo';
 import TournamentGroups from './TournamentGroups';
 import TournamentBracket from './TournamentBracket';
 import { supabase } from '../lib/supabase';
 
+/* ── Edit Modal ──────────────────────────────────────────────── */
+const EditModal = ({ tournament, onClose, onSave }) => {
+  const [form, setForm] = useState({
+    name: tournament.config.name || '',
+    format: tournament.config.format || 'groups',
+    legsMode: tournament.config.legsMode || 'single',
+    participants: tournament.config.participants || 8,
+  });
+  const [saving, setSaving] = useState(false);
+
+  const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
+
+  const handleSave = async () => {
+    setSaving(true);
+    const newConfig = { ...tournament.config, ...form };
+    const { error } = await supabase
+      .from('tournaments')
+      .update({ config: newConfig })
+      .eq('id', tournament.id);
+    setSaving(false);
+    if (error) { alert('Erro ao salvar: ' + error.message); return; }
+    onSave(newConfig);
+  };
+
+  const inputStyle = {
+    width: '100%', padding: '10px 14px', borderRadius: '8px', boxSizing: 'border-box',
+    background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border-color)',
+    color: 'white', fontFamily: 'Outfit', fontSize: '1rem', outline: 'none',
+  };
+
+  const btnActive = (active) => ({
+    flex: 1, padding: '10px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'Outfit', fontWeight: 600,
+    border: `1px solid ${active ? 'var(--accent-primary)' : 'var(--border-color)'}`,
+    background: active ? 'rgba(0,255,135,0.1)' : 'transparent',
+    color: active ? 'var(--accent-primary)' : 'var(--text-secondary)',
+    transition: 'all 0.15s',
+  });
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 999,
+      background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem',
+    }}>
+      <div className="glass-panel" style={{ width: '100%', maxWidth: '480px', position: 'relative' }}>
+        {/* Close */}
+        <button onClick={onClose} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+          <X size={22} />
+        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+          <Pencil size={22} color="var(--accent-secondary)" />
+          <h3 style={{ margin: 0, fontSize: '1.3rem' }}>Editar Torneio</h3>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* Name */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Nome</label>
+            <input style={inputStyle} value={form.name} onChange={e => set('name', e.target.value)} />
+          </div>
+
+          {/* Format */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Formato</label>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {[
+                { v: 'knockout', l: 'Mata-Mata' },
+                { v: 'groups', l: 'Grupos + Elim.' },
+                { v: 'league', l: 'Pontos Corridos' },
+              ].map(({ v, l }) => (
+                <button key={v} type="button" onClick={() => set('format', v)} style={btnActive(form.format === v)}>{l}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Legs */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Jogos</label>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {[{ v: 'single', l: 'Apenas Ida' }, { v: 'double', l: 'Ida e Volta' }].map(({ v, l }) => (
+                <button key={v} type="button" onClick={() => set('legsMode', v)} style={btnActive(form.legsMode === v)}>{l}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Participants */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Participantes</label>
+            <input type="number" min="2" max="32" style={{ ...inputStyle, width: '100px' }}
+              value={form.participants} onChange={e => set('participants', parseInt(e.target.value) || 2)} />
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+            <button onClick={onClose} className="btn-secondary" style={{ flex: 1 }}>Cancelar</button>
+            <button onClick={handleSave} disabled={saving} className="btn-primary"
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              {saving ? 'Salvando...' : <><Check size={18} /> Salvar</>}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ── Main Component ──────────────────────────────────────────── */
 const TournamentHistoryView = () => {
   const { id } = useParams();
   const [tournament, setTournament] = useState(null);
+  const [showEdit, setShowEdit] = useState(false);
 
   useEffect(() => {
     const loadTournament = async () => {
@@ -33,6 +142,11 @@ const TournamentHistoryView = () => {
     );
   }
 
+  const handleSaveEdit = (newConfig) => {
+    setTournament(t => ({ ...t, config: newConfig }));
+    setShowEdit(false);
+  };
+
   const fmt = tournament.config.format;
   const formatLabel = fmt === 'knockout' ? 'Mata-Mata' : fmt === 'league' ? 'Pontos Corridos' : 'Grupos + Eliminatórias';
   const legsLabel = tournament.config.legsMode === 'double' ? ' • Ida e Volta' : '';
@@ -40,25 +154,36 @@ const TournamentHistoryView = () => {
   return (
     <div style={{ marginTop: '1rem', animation: 'fadeIn 0.5s ease' }}>
 
+      {showEdit && (
+        <EditModal tournament={tournament} onClose={() => setShowEdit(false)} onSave={handleSaveEdit} />
+      )}
+
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
         <Link to="/" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)' }}>
           <ArrowLeft size={20} /> Voltar
         </Link>
-        <div>
+        <div style={{ flex: 1 }}>
           <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>Acervo Histórico: {tournament.config.name}</h2>
           <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             {tournament.date} • {tournament.config.participants} Participantes • {formatLabel}{legsLabel}
           </p>
         </div>
+        <button
+          onClick={() => setShowEdit(true)}
+          className="btn-secondary"
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '0.9rem', color: 'var(--accent-secondary)', borderColor: 'rgba(96,239,255,0.3)' }}
+        >
+          <Pencil size={16} /> Editar
+        </button>
       </div>
 
-      {/* Champion highlight */}
+      {/* Champion */}
       <div className="glass-panel" style={{
         marginBottom: '3rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexDirection: 'column', padding: '3rem 1rem',
         background: 'linear-gradient(to bottom, rgba(0,255,135,0.1), rgba(0,0,0,0.4))',
-        border: '1px solid var(--accent-primary)', boxShadow: '0 0 30px rgba(0,255,135,0.1)'
+        border: '1px solid var(--accent-primary)', boxShadow: '0 0 30px rgba(0,255,135,0.1)',
       }}>
         <Trophy size={64} color="#ffd700" style={{ marginBottom: '1rem', filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.5))' }} />
         <h3 style={{ color: '#ffd700', margin: 0, fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '2px' }}>Campeão</h3>
@@ -103,7 +228,7 @@ const TournamentHistoryView = () => {
         </div>
       )}
 
-      {/* Knockout bracket — only for knockout/groups formats */}
+      {/* Knockout bracket */}
       {fmt !== 'league' && (
         <div>
           <h3 style={{ color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '2rem', textAlign: 'center' }}>
