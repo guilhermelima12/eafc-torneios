@@ -49,12 +49,16 @@ const TournamentGroups = ({
   const [matches, setMatches] = useState([]);
 
   useEffect(() => {
-    if (readOnly) {
-      if (historyGroups) setGroupsData(historyGroups);
+    // History edit mode OR read-only: always use provided history data if available
+    if (historyGroups) {
+      setGroupsData(historyGroups);
       if (historyMatches) setMatches(historyMatches);
-      return;
+      return; // don't touch localStorage in history mode
     }
 
+    if (readOnly) return;
+
+    // Active tournament: use localStorage
     const savedGroups = localStorage.getItem('tournamentGroups');
     const savedMatches = localStorage.getItem('tournamentGroupMatches');
 
@@ -62,7 +66,7 @@ const TournamentGroups = ({
       setGroupsData(JSON.parse(savedGroups));
       setMatches(JSON.parse(savedMatches));
     } else {
-    const { groups, matches: newMatches } = generateGroupsAndMatches(players, legsMode, leagueOnly);
+      const { groups, matches: newMatches } = generateGroupsAndMatches(players, legsMode, leagueOnly);
       setGroupsData(groups);
       setMatches(newMatches);
       localStorage.setItem('tournamentGroups', JSON.stringify(groups));
@@ -107,7 +111,7 @@ const TournamentGroups = ({
 
     setGroupsData(newGroupsData);
     if (onDataChange) {
-      onDataChange(newGroupsData, matches);
+      onDataChange(newGroupsData, currentMatches); // ✅ use currentMatches, not stale closure
     } else {
       localStorage.setItem('tournamentGroups', JSON.stringify(newGroupsData));
     }
@@ -117,9 +121,7 @@ const TournamentGroups = ({
     if (readOnly) return;
     const updated = matches.map(m => m.id === matchId ? { ...m, score1: s1, score2: s2 } : m);
     setMatches(updated);
-    if (onDataChange) {
-      onDataChange(groupsData, updated);
-    } else {
+    if (!onDataChange) {
       localStorage.setItem('tournamentGroupMatches', JSON.stringify(updated));
     }
     recalculateStandings(updated, groupsData);
