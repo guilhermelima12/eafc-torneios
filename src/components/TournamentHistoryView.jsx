@@ -29,9 +29,20 @@ const EditModal = ({ tournament, onClose, onSave }) => {
   const handleSave = async () => {
     setSaving(true);
     const newConfig = { ...tournament.config, ...form };
-    const { error } = await supabase.from('tournaments').update({ config: newConfig }).eq('id', tournament.id);
+    const { data: updatedRows, error } = await supabase
+      .from('tournaments')
+      .update({ config: newConfig })
+      .eq('id', tournament.id)
+      .select();
     setSaving(false);
-    if (error) { alert('Erro ao salvar: ' + error.message); return; }
+    if (error) {
+      alert('Erro ao salvar: ' + error.message + '\nCódigo: ' + error.code);
+      return;
+    }
+    if (!updatedRows || updatedRows.length === 0) {
+      alert('Aviso: Nenhuma linha foi atualizada no banco de dados.\nID usado: ' + tournament.id + '\nVerifique RLS ou tipo da coluna id.');
+      return;
+    }
     onSave(newConfig);
   };
 
@@ -124,12 +135,25 @@ const TournamentHistoryView = () => {
 
   const saveToSupabase = useCallback(async (payload) => {
     setSaving(true);
-    const { error } = await supabase.from('tournaments').update(payload).eq('id', id);
+    const { data: updatedRows, error } = await supabase
+      .from('tournaments')
+      .update(payload)
+      .eq('id', id)
+      .select();
     setSaving(false);
-    if (!error) {
-      setSavedMsg(true);
-      setTimeout(() => setSavedMsg(false), 2000);
+    if (error) {
+      console.error('Supabase update error:', error);
+      alert('Erro ao salvar: ' + error.message + '\nCódigo: ' + error.code);
+      return;
     }
+    if (!updatedRows || updatedRows.length === 0) {
+      console.warn('Supabase: 0 rows updated. ID:', id);
+      alert('Aviso: Nenhuma linha foi atualizada.\nID: ' + id + '\n\nPossíveis causas:\n1. RLS bloqueando UPDATE\n2. ID não encontrado na tabela');
+      return;
+    }
+    console.log('Supabase: updated', updatedRows.length, 'row(s)');
+    setSavedMsg(true);
+    setTimeout(() => setSavedMsg(false), 2000);
   }, [id]);
 
   const debouncedSave = useSaveDebounce(saveToSupabase, 600);
