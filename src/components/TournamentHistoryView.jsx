@@ -5,6 +5,7 @@ import TeamLogo from './TeamLogo';
 import TournamentGroups from './TournamentGroups';
 import TournamentBracket from './TournamentBracket';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 
 /* ── Debounce helper ─────────────────────────────────────────── */
 const useSaveDebounce = (saveFn, delay = 1200) => {
@@ -105,6 +106,7 @@ const EditModal = ({ tournament, onClose, onSave }) => {
 /* ── Main Component ──────────────────────────────────────────── */
 const TournamentHistoryView = () => {
   const { id } = useParams();
+  const { isAdmin } = useAuth();
   const [tournament, setTournament] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -257,16 +259,20 @@ const TournamentHistoryView = () => {
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {saving && <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Salvando...</span>}
           {savedMsg && <span style={{ fontSize: '0.8rem', color: 'var(--accent-primary)' }}>✓ Salvo</span>}
-          <button
-            onClick={handleToggleEditMode}
-            className="btn-secondary"
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '0.9rem', color: editMode ? '#fbbf24' : 'var(--text-secondary)', borderColor: editMode ? 'rgba(251,191,36,0.4)' : 'var(--border-color)' }}
-          >
-            {editMode ? <><Eye size={16} /> Visualizar</> : <><PenLine size={16} /> Editar Partidas</>}
-          </button>
-          <button onClick={() => setShowEdit(true)} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '0.9rem', color: 'var(--accent-secondary)', borderColor: 'rgba(96,239,255,0.3)' }}>
-            <Pencil size={16} /> Configuração
-          </button>
+          {isAdmin && (
+            <>
+              <button
+                onClick={handleToggleEditMode}
+                className="btn-secondary"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '0.9rem', color: editMode ? '#fbbf24' : 'var(--text-secondary)', borderColor: editMode ? 'rgba(251,191,36,0.4)' : 'var(--border-color)' }}
+              >
+                {editMode ? <><Eye size={16} /> Visualizar</> : <><PenLine size={16} /> Editar Partidas</>}
+              </button>
+              <button onClick={() => setShowEdit(true)} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '0.9rem', color: 'var(--accent-secondary)', borderColor: 'rgba(96,239,255,0.3)' }}>
+                <Pencil size={16} /> Configuração
+              </button>
+            </>
+          )}
         </div>
       </div>
 

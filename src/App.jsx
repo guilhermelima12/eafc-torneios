@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, Link, NavLink } from 'react-router-dom';
-import { Trophy, Users, BarChart2, Trash2 } from 'lucide-react';
+import { HashRouter, Routes, Route, Link, NavLink, Navigate } from 'react-router-dom';
+import { Trophy, Users, BarChart2, Trash2, LogOut, ShieldCheck, Eye } from 'lucide-react';
 import TournamentSetup from './components/TournamentSetup';
 import PlayerRegistration from './components/PlayerRegistration';
 import TeamLogo from './components/TeamLogo';
@@ -11,8 +11,11 @@ import TournamentHistoryView from './components/TournamentHistoryView';
 import PlayersManager from './components/PlayersManager';
 import StatsDashboard from './components/StatsDashboard';
 import { supabase } from './lib/supabase';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import LoginGate from './components/LoginGate';
 
 const Dashboard = () => {
+  const { isAdmin } = useAuth();
   const [config, setConfig] = useState(null);
   const [players, setPlayers] = useState(null);
   const [phase, setPhase] = useState('knockout');
@@ -229,12 +232,14 @@ const Dashboard = () => {
         
         {!config ? (
           <div>
-            <p style={{ color: 'var(--text-secondary)' }}>Bem-vindo ao EA FC 26 Manager. Comece configurando o seu torneio presencial.</p>
-            <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
-              <Link to="/setup" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
-                Criar Novo Torneio
-              </Link>
-            </div>
+            <p style={{ color: 'var(--text-secondary)' }}>Bem-vindo ao EA FC 26 Manager.{isAdmin ? ' Comece configurando o seu torneio presencial.' : ' Aguardando o início de um torneio.'}</p>
+            {isAdmin && (
+              <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
+                <Link to="/setup" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
+                  Criar Novo Torneio
+                </Link>
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -249,58 +254,63 @@ const Dashboard = () => {
                     {' · '}{config.participants} participantes
                   </p>
                 </div>
-                <button onClick={handleEndTournament} className="btn-secondary" style={{ color: '#ff4b4b', borderColor: 'rgba(255,75,75,0.3)', whiteSpace: 'nowrap' }}>
-                  Encerrar / Salvar no Histórico
-                </button>
+                {isAdmin && (
+                  <button onClick={handleEndTournament} className="btn-secondary" style={{ color: '#ff4b4b', borderColor: 'rgba(255,75,75,0.3)', whiteSpace: 'nowrap' }}>
+                    Encerrar / Salvar no Histórico
+                  </button>
+                )}
               </div>
 
-              {/* Management buttons */}
-              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-                <button
-                  onClick={() => {
-                    if (!window.confirm('Resetar todos os placares? Os jogadores e times serão mantidos, mas os seeds NÃO serão alterados.')) return;
-                    localStorage.removeItem('tournamentMatches');
-                    localStorage.removeItem('tournamentGroups');
-                    localStorage.removeItem('tournamentGroupMatches');
-                    localStorage.removeItem('groupStageFinished');
-                    localStorage.removeItem('tournamentChampion');
-                    window.location.reload();
-                  }}
-                  className="btn-secondary"
-                  style={{ padding: '7px 14px', fontSize: '0.85rem', color: '#fbbf24', borderColor: 'rgba(251,191,36,0.3)' }}
-                >
-                  🔄 Resetar Partidas
-                </button>
-                <button
-                  onClick={() => { localStorage.removeItem('tournamentPlayers'); localStorage.removeItem('tournamentDraftPool'); window.location.href = '/#/pool'; }}
-                  className="btn-secondary"
-                  style={{ padding: '7px 14px', fontSize: '0.85rem', color: 'var(--accent-secondary)', borderColor: 'rgba(96,239,255,0.3)' }}
-                >
-                  ⚙️ Trocar Times
-                </button>
-                <button
-                  onClick={() => { localStorage.removeItem('tournamentPlayers'); window.location.href = '/#/draft'; }}
-                  className="btn-secondary"
-                  style={{ padding: '7px 14px', fontSize: '0.85rem' }}
-                >
-                  👥 Refazer Draft
-                </button>
-              </div>
+              {/* Management buttons — admin only */}
+              {isAdmin && (
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => {
+                      if (!window.confirm('Resetar todos os placares? Os jogadores e times serão mantidos, mas os seeds NÃO serão alterados.')) return;
+                      localStorage.removeItem('tournamentMatches');
+                      localStorage.removeItem('tournamentGroups');
+                      localStorage.removeItem('tournamentGroupMatches');
+                      localStorage.removeItem('groupStageFinished');
+                      localStorage.removeItem('tournamentChampion');
+                      window.location.reload();
+                    }}
+                    className="btn-secondary"
+                    style={{ padding: '7px 14px', fontSize: '0.85rem', color: '#fbbf24', borderColor: 'rgba(251,191,36,0.3)' }}
+                  >
+                    🔄 Resetar Partidas
+                  </button>
+                  <button
+                    onClick={() => { localStorage.removeItem('tournamentPlayers'); localStorage.removeItem('tournamentDraftPool'); window.location.href = '/#/pool'; }}
+                    className="btn-secondary"
+                    style={{ padding: '7px 14px', fontSize: '0.85rem', color: 'var(--accent-secondary)', borderColor: 'rgba(96,239,255,0.3)' }}
+                  >
+                    ⚙️ Trocar Times
+                  </button>
+                  <button
+                    onClick={() => { localStorage.removeItem('tournamentPlayers'); window.location.href = '/#/draft'; }}
+                    className="btn-secondary"
+                    style={{ padding: '7px 14px', fontSize: '0.85rem' }}
+                  >
+                    👥 Refazer Draft
+                  </button>
+                </div>
+              )}
             </div>
 
             <div style={{ marginTop: '1rem' }}>
               {phase === 'groups' ? (
                 <TournamentGroups
                   players={players}
-                  onFinishGroups={handleFinishGroups}
+                  onFinishGroups={isAdmin ? handleFinishGroups : null}
                   legsMode={config.legsMode || 'single'}
                   numGroups={config.numGroups || 2}
                   advancePerGroup={config.advancePerGroup || 2}
+                  readOnly={!isAdmin}
                 />
               ) : phase === 'league' ? (
-                <TournamentGroups players={players} onFinishGroups={handleFinishGroups} leagueOnly={true} legsMode={config.legsMode || 'single'} numGroups={1} advancePerGroup={4} />
+                <TournamentGroups players={players} onFinishGroups={isAdmin ? handleFinishGroups : null} leagueOnly={true} legsMode={config.legsMode || 'single'} numGroups={1} advancePerGroup={4} readOnly={!isAdmin} />
               ) : (
-                <TournamentBracket />
+                <TournamentBracket readOnly={!isAdmin} />
               )}
             </div>
           </>
@@ -346,17 +356,19 @@ const Dashboard = () => {
                   <Link to={`/history/${item.id}`} className="btn-secondary" style={{ textDecoration: 'none', textAlign: 'center', fontSize: '0.9rem', padding: '10px', flex: 1 }}>
                     Ver Detalhes
                   </Link>
-                  <button
-                    onClick={() => handleDeleteTournament(item.id)}
-                    style={{
-                      background: 'transparent', border: '1px solid rgba(255,75,75,0.3)',
-                      color: '#ff4b4b', cursor: 'pointer', padding: '10px 14px',
-                      borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px',
-                      fontFamily: 'Outfit', fontSize: '0.9rem', transition: 'all 0.2s'
-                    }}
-                  >
-                    <Trash2 size={16} /> Deletar
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleDeleteTournament(item.id)}
+                      style={{
+                        background: 'transparent', border: '1px solid rgba(255,75,75,0.3)',
+                        color: '#ff4b4b', cursor: 'pointer', padding: '10px 14px',
+                        borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px',
+                        fontFamily: 'Outfit', fontSize: '0.9rem', transition: 'all 0.2s'
+                      }}
+                    >
+                      <Trash2 size={16} /> Deletar
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -368,100 +380,104 @@ const Dashboard = () => {
   );
 };
 
-const App = () => {
+/* ── NavLink style helper ─────────────────────────────────────── */
+const navLinkStyle = ({ isActive }) => ({
+  color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
+  fontWeight: isActive ? 600 : 400,
+  textDecoration: 'none',
+  display: 'flex', alignItems: 'center', gap: '8px',
+  transition: 'color 0.2s',
+  borderBottom: isActive ? '2px solid var(--accent-primary)' : '2px solid transparent',
+  paddingBottom: '4px'
+});
+
+/* ── Guarded route: redirects guests away from admin-only pages ── */
+const AdminRoute = ({ element }) => {
+  const { isAdmin } = useAuth();
+  return isAdmin ? element : <Navigate to="/" replace />;
+};
+
+/* ── Main shell (inside HashRouter + AuthProvider) ─────────────── */
+const AppShell = () => {
+  const { role, isAdmin, logout } = useAuth();
+
+  if (!role) return <LoginGate />;
+
   return (
-    <HashRouter>
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        
-        {/* Header Navigation */}
-        <header style={{ 
-          background: 'rgba(0,0,0,0.4)', borderBottom: '1px solid var(--border-color)', 
-          padding: '1rem 2rem', backdropFilter: 'blur(10px)'
-        }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ 
-                background: 'var(--accent-primary)', padding: '8px', borderRadius: '8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
-                <Trophy size={24} color="#000" />
-              </div>
-              <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, letterSpacing: '0.5px' }}>
-                EA FC 26 Manager
-              </h1>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+
+      {/* Header Navigation */}
+      <header style={{
+        background: 'rgba(0,0,0,0.4)', borderBottom: '1px solid var(--border-color)',
+        padding: '1rem 2rem', backdropFilter: 'blur(10px)'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: 'var(--accent-primary)', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Trophy size={24} color="#000" />
             </div>
-
-            <nav style={{ display: 'flex', gap: '2rem' }}>
-              <NavLink 
-                to="/" 
-                style={({ isActive }) => ({ 
-                  color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                  fontWeight: isActive ? 600 : 400,
-                  textDecoration: 'none', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '8px',
-                  transition: 'color 0.2s',
-                  borderBottom: isActive ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                  paddingBottom: '4px'
-                })}
-              >
-                <Trophy size={20} /> Torneios
-              </NavLink>
-              
-              <NavLink 
-                to="/players" 
-                style={({ isActive }) => ({ 
-                  color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                  fontWeight: isActive ? 600 : 400,
-                  textDecoration: 'none', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '8px',
-                  transition: 'color 0.2s',
-                  borderBottom: isActive ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                  paddingBottom: '4px'
-                })}
-              >
-                <Users size={20} /> Jogadores
-              </NavLink>
-
-              <NavLink 
-                to="/stats" 
-                style={({ isActive }) => ({ 
-                  color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                  fontWeight: isActive ? 600 : 400,
-                  textDecoration: 'none', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '8px',
-                  transition: 'color 0.2s',
-                  borderBottom: isActive ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                  paddingBottom: '4px'
-                })}
-              >
-                <BarChart2 size={20} /> Estatísticas
-              </NavLink>
-            </nav>
-
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, letterSpacing: '0.5px' }}>
+              EA FC 26 Manager
+            </h1>
           </div>
-        </header>
 
-        <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '2rem' }}>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/setup" element={<TournamentSetup />} />
-            <Route path="/pool" element={<TeamPoolSelection />} />
-            <Route path="/draft" element={<PlayerRegistration />} />
-            <Route path="/players" element={<PlayersManager />} />
-            <Route path="/stats" element={<StatsDashboard />} />
-            <Route path="/history/:id" element={<TournamentHistoryView />} />
-          </Routes>
-        </main>
-      </div>
-    </HashRouter>
+          <nav style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+            <NavLink to="/" style={navLinkStyle}><Trophy size={20} /> Torneios</NavLink>
+            <NavLink to="/players" style={navLinkStyle}><Users size={20} /> Jogadores</NavLink>
+            <NavLink to="/stats" style={navLinkStyle}><BarChart2 size={20} /> Estatísticas</NavLink>
+          </nav>
+
+          {/* Role badge + logout */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '5px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600,
+              background: isAdmin ? 'rgba(0,255,135,0.1)' : 'rgba(96,239,255,0.1)',
+              border: `1px solid ${isAdmin ? 'rgba(0,255,135,0.25)' : 'rgba(96,239,255,0.25)'}`,
+              color: isAdmin ? 'var(--accent-primary)' : 'var(--accent-secondary)',
+            }}>
+              {isAdmin ? <ShieldCheck size={14} /> : <Eye size={14} />}
+              {isAdmin ? 'Admin' : 'Convidado'}
+            </div>
+            <button
+              onClick={logout}
+              title="Sair"
+              style={{
+                background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
+                color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px 10px',
+                borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px',
+                fontFamily: 'Outfit', fontSize: '0.8rem', transition: 'all 0.2s'
+              }}
+            >
+              <LogOut size={14} /> Sair
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '2rem' }}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/setup" element={<AdminRoute element={<TournamentSetup />} />} />
+          <Route path="/pool" element={<AdminRoute element={<TeamPoolSelection />} />} />
+          <Route path="/draft" element={<AdminRoute element={<PlayerRegistration />} />} />
+          <Route path="/players" element={<PlayersManager />} />
+          <Route path="/stats" element={<StatsDashboard />} />
+          <Route path="/history/:id" element={<TournamentHistoryView />} />
+        </Routes>
+      </main>
+    </div>
   );
 };
+
+/* ── Root App ─────────────────────────────────────────────────── */
+const App = () => (
+  <AuthProvider>
+    <HashRouter>
+      <AppShell />
+    </HashRouter>
+  </AuthProvider>
+);
 
 export default App;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Users, Plus, Trash2, Trophy, AlertCircle, Loader, Pencil, Check, X, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 
 // ── Helper: ordered standings from a tournament record ─────────
 const getTournamentStandings = (t) => {
@@ -39,6 +40,7 @@ const getTournamentStandings = (t) => {
 };
 
 const PlayersManager = () => {
+  const { isAdmin } = useAuth();
   const [registeredPlayers, setRegisteredPlayers] = useState([]);
   const [tournaments, setTournaments] = useState([]);
   const [newName, setNewName] = useState('');
@@ -268,32 +270,34 @@ const PlayersManager = () => {
             <Users size={28} color="var(--accent-secondary)" />
             <h2 style={{ margin: 0 }}>Jogadores Cadastrados</h2>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-            <button
-              onClick={recalcularSeeds}
-              disabled={recalculating || loading}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px',
-                background: 'rgba(96,239,255,0.08)', border: '1px solid rgba(96,239,255,0.3)',
-                color: 'var(--accent-secondary)', borderRadius: '8px', cursor: recalculating ? 'wait' : 'pointer',
-                fontFamily: 'Outfit', fontSize: '0.85rem', fontWeight: 600, opacity: recalculating ? 0.7 : 1,
-                transition: 'all 0.2s'
-              }}
-            >
-              <RefreshCw size={15} style={{ animation: recalculating ? 'spin 1s linear infinite' : 'none' }} />
-              {recalculating ? 'Recalculando...' : 'Recalcular Seeds'}
-            </button>
-            {recalcMsg && (
-              <div style={{
-                fontSize: '0.78rem', padding: '6px 12px', borderRadius: '8px', maxWidth: '340px', textAlign: 'right',
-                background: recalcMsg.type === 'ok' ? 'rgba(0,255,135,0.08)' : 'rgba(255,200,0,0.08)',
-                color: recalcMsg.type === 'ok' ? 'var(--accent-primary)' : '#fbbf24',
-                border: `1px solid ${recalcMsg.type === 'ok' ? 'rgba(0,255,135,0.2)' : 'rgba(255,200,0,0.2)'}`
-              }}>
-                {recalcMsg.text}
-              </div>
-            )}
-          </div>
+          {isAdmin && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+              <button
+                onClick={recalcularSeeds}
+                disabled={recalculating || loading}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px',
+                  background: 'rgba(96,239,255,0.08)', border: '1px solid rgba(96,239,255,0.3)',
+                  color: 'var(--accent-secondary)', borderRadius: '8px', cursor: recalculating ? 'wait' : 'pointer',
+                  fontFamily: 'Outfit', fontSize: '0.85rem', fontWeight: 600, opacity: recalculating ? 0.7 : 1,
+                  transition: 'all 0.2s'
+                }}
+              >
+                <RefreshCw size={15} style={{ animation: recalculating ? 'spin 1s linear infinite' : 'none' }} />
+                {recalculating ? 'Recalculando...' : 'Recalcular Seeds'}
+              </button>
+              {recalcMsg && (
+                <div style={{
+                  fontSize: '0.78rem', padding: '6px 12px', borderRadius: '8px', maxWidth: '340px', textAlign: 'right',
+                  background: recalcMsg.type === 'ok' ? 'rgba(0,255,135,0.08)' : 'rgba(255,200,0,0.08)',
+                  color: recalcMsg.type === 'ok' ? 'var(--accent-primary)' : '#fbbf24',
+                  border: `1px solid ${recalcMsg.type === 'ok' ? 'rgba(0,255,135,0.2)' : 'rgba(255,200,0,0.2)'}`
+                }}>
+                  {recalcMsg.text}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {dbError && (
@@ -309,40 +313,42 @@ const PlayersManager = () => {
           </div>
         )}
 
-        <form onSubmit={handleAddPlayer} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-          <input
-            type="text"
-            placeholder="Nome do jogador"
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            style={{
-              flex: 2, minWidth: '180px', padding: '12px 16px', borderRadius: '8px',
-              background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)',
-              color: 'white', fontFamily: 'Outfit', fontSize: '1rem', outline: 'none'
-            }}
-          />
-          <input
-            type="number"
-            min="1"
-            placeholder="Seed (ex: 1)"
-            value={newSeed}
-            onChange={e => setNewSeed(e.target.value)}
-            style={{
-              flex: 1, minWidth: '100px', maxWidth: '120px', padding: '12px 16px', borderRadius: '8px',
-              background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)',
-              color: 'white', fontFamily: 'Outfit', fontSize: '1rem', outline: 'none', textAlign: 'center'
-            }}
-          />
-          <button
-            type="submit"
-            disabled={saving}
-            className="btn-primary"
-            style={{ padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.7 : 1 }}
-          >
-            {saving ? <Loader size={20} /> : <Plus size={20} />}
-            {saving ? 'Salvando...' : 'Adicionar'}
-          </button>
-        </form>
+        {isAdmin && (
+          <form onSubmit={handleAddPlayer} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+            <input
+              type="text"
+              placeholder="Nome do jogador"
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              style={{
+                flex: 2, minWidth: '180px', padding: '12px 16px', borderRadius: '8px',
+                background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)',
+                color: 'white', fontFamily: 'Outfit', fontSize: '1rem', outline: 'none'
+              }}
+            />
+            <input
+              type="number"
+              min="1"
+              placeholder="Seed (ex: 1)"
+              value={newSeed}
+              onChange={e => setNewSeed(e.target.value)}
+              style={{
+                flex: 1, minWidth: '100px', maxWidth: '120px', padding: '12px 16px', borderRadius: '8px',
+                background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)',
+                color: 'white', fontFamily: 'Outfit', fontSize: '1rem', outline: 'none', textAlign: 'center'
+              }}
+            />
+            <button
+              type="submit"
+              disabled={saving}
+              className="btn-primary"
+              style={{ padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.7 : 1 }}
+            >
+              {saving ? <Loader size={20} /> : <Plus size={20} />}
+              {saving ? 'Salvando...' : 'Adicionar'}
+            </button>
+          </form>
+        )}
 
         {loading ? (
           <p style={{ color: 'var(--text-secondary)' }}>Carregando...</p>
@@ -384,78 +390,79 @@ const PlayersManager = () => {
                   </div>
                 </div>
 
-                {/* Right: edit + delete */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {editingId === p.id ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <input
-                        type="number"
-                        min="1"
-                        value={editSeedValue}
-                        onChange={e => setEditSeedValue(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') handleSaveSeed(p.id);
-                          if (e.key === 'Escape') setEditingId(null);
-                        }}
-                        autoFocus
-                        style={{
-                          width: '60px', padding: '6px 8px', borderRadius: '6px', textAlign: 'center',
-                          background: 'rgba(255,255,255,0.08)', border: '1px solid var(--accent-primary)',
-                          color: 'white', fontFamily: 'Outfit', fontSize: '0.9rem', outline: 'none'
-                        }}
-                      />
+                {/* Right: edit + delete (admin only) */}
+                {isAdmin && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {editingId === p.id ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <input
+                          type="number"
+                          min="1"
+                          value={editSeedValue}
+                          onChange={e => setEditSeedValue(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') handleSaveSeed(p.id);
+                            if (e.key === 'Escape') setEditingId(null);
+                          }}
+                          autoFocus
+                          style={{
+                            width: '60px', padding: '6px 8px', borderRadius: '6px', textAlign: 'center',
+                            background: 'rgba(255,255,255,0.08)', border: '1px solid var(--accent-primary)',
+                            color: 'white', fontFamily: 'Outfit', fontSize: '0.9rem', outline: 'none'
+                          }}
+                        />
+                        <button
+                          onClick={() => handleSaveSeed(p.id)}
+                          title="Salvar seed"
+                          style={{
+                            background: 'rgba(0,255,135,0.1)', border: '1px solid rgba(0,255,135,0.3)',
+                            color: 'var(--accent-primary)', cursor: 'pointer', padding: '6px 8px',
+                            borderRadius: '6px', display: 'flex', alignItems: 'center', transition: 'all 0.2s'
+                          }}
+                        >
+                          <Check size={16} />
+                        </button>
+                        <button
+                          onClick={() => setEditingId(null)}
+                          title="Cancelar"
+                          style={{
+                            background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
+                            color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px 8px',
+                            borderRadius: '6px', display: 'flex', alignItems: 'center', transition: 'all 0.2s'
+                          }}
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ) : (
                       <button
-                        onClick={() => handleSaveSeed(p.id)}
-                        title="Salvar seed"
+                        onClick={() => handleStartEdit(p)}
+                        title="Editar seed"
                         style={{
-                          background: 'rgba(0,255,135,0.1)', border: '1px solid rgba(0,255,135,0.3)',
-                          color: 'var(--accent-primary)', cursor: 'pointer', padding: '6px 8px',
-                          borderRadius: '6px', display: 'flex', alignItems: 'center', transition: 'all 0.2s'
-                        }}
-                      >
-                        <Check size={16} />
-                      </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        title="Cancelar"
-                        style={{
-                          background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
+                          background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
                           color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px 8px',
-                          borderRadius: '6px', display: 'flex', alignItems: 'center', transition: 'all 0.2s'
+                          borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px',
+                          fontFamily: 'Outfit', fontSize: '0.8rem', transition: 'all 0.2s'
                         }}
                       >
-                        <X size={16} />
+                        <Pencil size={14} />
                       </button>
-                    </div>
-                  ) : (
+                    )}
                     <button
-                      onClick={() => handleStartEdit(p)}
-                      title="Editar seed"
+                      onClick={() => handleDeletePlayer(p.id)}
+                      disabled={deleting === p.id}
+                      title="Remover jogador"
                       style={{
-                        background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
-                        color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px 8px',
-                        borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px',
-                        fontFamily: 'Outfit', fontSize: '0.8rem', transition: 'all 0.2s'
+                        background: 'transparent', border: 'none', color: '#ff4b4b',
+                        cursor: 'pointer', padding: '6px 8px', borderRadius: '6px',
+                        opacity: deleting === p.id ? 0.5 : 1, display: 'flex', alignItems: 'center',
+                        transition: 'all 0.2s'
                       }}
                     >
-                      <Pencil size={14} />
+                      <Trash2 size={18} />
                     </button>
-                  )}
-
-                  <button
-                    onClick={() => handleDeletePlayer(p.id)}
-                    disabled={deleting === p.id}
-                    title="Remover jogador"
-                    style={{
-                      background: 'transparent', border: 'none', color: '#ff4b4b',
-                      cursor: 'pointer', padding: '6px 8px', borderRadius: '6px',
-                      opacity: deleting === p.id ? 0.5 : 1, display: 'flex', alignItems: 'center',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
