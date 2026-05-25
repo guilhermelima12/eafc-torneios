@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Link, NavLink, Navigate } from 'react-router-dom';
-import { Trophy, Users, BarChart2, Trash2, LogOut, ShieldCheck, Eye } from 'lucide-react';
+import { Trophy, Users, BarChart2, Trash2, LogOut, ShieldCheck, Eye, Home } from 'lucide-react';
 import TournamentSetup from './components/TournamentSetup';
 import PlayerRegistration from './components/PlayerRegistration';
 import TeamLogo from './components/TeamLogo';
@@ -10,6 +10,7 @@ import TeamPoolSelection from './components/TeamPoolSelection';
 import TournamentHistoryView from './components/TournamentHistoryView';
 import PlayersManager from './components/PlayersManager';
 import StatsDashboard from './components/StatsDashboard';
+import HomePage from './components/HomePage';
 import { supabase } from './lib/supabase';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginGate from './components/LoginGate';
@@ -423,7 +424,8 @@ const AppShell = () => {
           </div>
 
           <nav style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-            <NavLink to="/" style={navLinkStyle}><Trophy size={20} /> Torneios</NavLink>
+            <NavLink to="/" end style={navLinkStyle}><Home size={20} /> Home</NavLink>
+            <NavLink to="/tournaments" style={navLinkStyle}><Trophy size={20} /> Torneios</NavLink>
             <NavLink to="/players" style={navLinkStyle}><Users size={20} /> Jogadores</NavLink>
             <NavLink to="/stats" style={navLinkStyle}><BarChart2 size={20} /> Estatísticas</NavLink>
           </nav>
@@ -458,7 +460,8 @@ const AppShell = () => {
 
       <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '2rem' }}>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/tournaments" element={<Dashboard />} />
           <Route path="/setup" element={<AdminRoute element={<TournamentSetup />} />} />
           <Route path="/pool" element={<AdminRoute element={<TeamPoolSelection />} />} />
           <Route path="/draft" element={<AdminRoute element={<PlayerRegistration />} />} />
