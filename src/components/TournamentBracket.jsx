@@ -378,7 +378,7 @@ const TournamentBracket = ({ readOnly = false, historyMatches = null, historyPla
   }, [liveMatches, activeLiveMatch?.match_key]);
 
   return (
-    <div style={{ padding: '1.5rem 0', overflowX: 'auto', overflowY: 'visible' }}>
+    <div style={{ padding: '1.5rem 0', overflowX: 'auto', overflowY: 'visible', WebkitOverflowScrolling: 'touch' }}>
 
       {/* Live Match Modal (admin panel) */}
       {activeLiveMatch && (

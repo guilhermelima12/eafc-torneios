@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Link, NavLink, Navigate } from 'react-router-dom';
-import { Trophy, Users, BarChart2, Trash2, LogOut, ShieldCheck, Eye, Home } from 'lucide-react';
+import { Trophy, Users, BarChart2, Trash2, LogOut, ShieldCheck, Eye, Home, Menu, X } from 'lucide-react';
 import TournamentSetup from './components/TournamentSetup';
 import PlayerRegistration from './components/PlayerRegistration';
 import TeamLogo from './components/TeamLogo';
@@ -401,37 +401,54 @@ const AdminRoute = ({ element }) => {
 /* ── Main shell (inside HashRouter + AuthProvider) ─────────────── */
 const AppShell = () => {
   const { role, isAdmin, logout } = useAuth();
+  const [navOpen, setNavOpen] = useState(false);
+  const closeNav = () => setNavOpen(false);
 
   if (!role) return <LoginGate />;
+
+  const mobileNavLinkStyle = (isActive) => ({
+    display: 'flex', alignItems: 'center', gap: '14px',
+    padding: '0.875rem 1.25rem', borderRadius: '12px',
+    textDecoration: 'none', marginBottom: '6px',
+    color: isActive ? 'var(--accent-primary)' : 'var(--text-primary)',
+    background: isActive ? 'rgba(0,255,135,0.08)' : 'rgba(255,255,255,0.03)',
+    border: `1px solid ${isActive ? 'rgba(0,255,135,0.2)' : 'rgba(255,255,255,0.05)'}`,
+    fontWeight: isActive ? 700 : 500,
+    fontSize: '1.05rem',
+    transition: 'all 0.2s',
+  });
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
-      {/* Header Navigation */}
+      {/* ── Header ── */}
       <header style={{
-        background: 'rgba(0,0,0,0.4)', borderBottom: '1px solid var(--border-color)',
-        padding: '1rem 2rem', backdropFilter: 'blur(10px)'
+        background: 'rgba(0,0,0,0.5)', borderBottom: '1px solid var(--border-color)',
+        padding: '0.875rem 1.5rem', backdropFilter: 'blur(12px)',
+        position: 'sticky', top: 0, zIndex: 200,
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: 'var(--accent-primary)', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Trophy size={24} color="#000" />
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ background: 'var(--accent-primary)', padding: '7px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Trophy size={22} color="#000" />
             </div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, letterSpacing: '0.5px' }}>
+            <h1 className="header-title" style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0, letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
               EA FC 26 Manager
             </h1>
           </div>
 
-          <nav style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-            <NavLink to="/" end style={navLinkStyle}><Home size={20} /> Home</NavLink>
-            <NavLink to="/tournaments" style={navLinkStyle}><Trophy size={20} /> Torneios</NavLink>
-            <NavLink to="/players" style={navLinkStyle}><Users size={20} /> Jogadores</NavLink>
-            <NavLink to="/stats" style={navLinkStyle}><BarChart2 size={20} /> Estatísticas</NavLink>
+          {/* Desktop nav */}
+          <nav className="desk-nav" style={{ display: 'flex', gap: '1.75rem', alignItems: 'center' }}>
+            <NavLink to="/" end style={navLinkStyle}><Home size={18} /> Home</NavLink>
+            <NavLink to="/tournaments" style={navLinkStyle}><Trophy size={18} /> Torneios</NavLink>
+            <NavLink to="/players" style={navLinkStyle}><Users size={18} /> Jogadores</NavLink>
+            <NavLink to="/stats" style={navLinkStyle}><BarChart2 size={18} /> Estatísticas</NavLink>
           </nav>
 
-          {/* Role badge + logout */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Desktop: role + logout */}
+          <div className="desk-nav" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               padding: '5px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600,
@@ -442,23 +459,95 @@ const AppShell = () => {
               {isAdmin ? <ShieldCheck size={14} /> : <Eye size={14} />}
               {isAdmin ? 'Admin' : 'Convidado'}
             </div>
-            <button
-              onClick={logout}
-              title="Sair"
-              style={{
-                background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
-                color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px 10px',
-                borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px',
-                fontFamily: 'Outfit', fontSize: '0.8rem', transition: 'all 0.2s'
-              }}
-            >
+            <button onClick={logout} title="Sair" style={{
+              background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
+              color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px 10px',
+              borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px',
+              fontFamily: 'Outfit', fontSize: '0.8rem', transition: 'all 0.2s'
+            }}>
               <LogOut size={14} /> Sair
             </button>
           </div>
+
+          {/* Mobile: role chip + hamburger */}
+          <div className="mob-only" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '5px',
+              padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600,
+              background: isAdmin ? 'rgba(0,255,135,0.12)' : 'rgba(96,239,255,0.12)',
+              border: `1px solid ${isAdmin ? 'rgba(0,255,135,0.3)' : 'rgba(96,239,255,0.3)'}`,
+              color: isAdmin ? 'var(--accent-primary)' : 'var(--accent-secondary)',
+            }}>
+              {isAdmin ? <ShieldCheck size={12} /> : <Eye size={12} />}
+              {isAdmin ? 'Admin' : 'Guest'}
+            </div>
+            <button
+              onClick={() => setNavOpen(o => !o)}
+              style={{
+                background: navOpen ? 'rgba(0,255,135,0.08)' : 'rgba(255,255,255,0.06)',
+                border: `1px solid ${navOpen ? 'rgba(0,255,135,0.25)' : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: '8px', padding: '7px', cursor: 'pointer',
+                color: navOpen ? 'var(--accent-primary)' : 'white',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.2s',
+              }}
+              aria-label="Menu"
+            >
+              {navOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+
         </div>
       </header>
 
-      <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '2rem' }}>
+      {/* ── Mobile Nav Overlay ── */}
+      {navOpen && (
+        <div
+          onClick={closeNav}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 190,
+            background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
+          }}
+        />
+      )}
+      <div className="mob-only" style={{
+        position: 'fixed', top: '58px', left: 0, right: 0, zIndex: 195,
+        flexDirection: 'column',
+        background: 'rgba(10,14,26,0.98)', backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        padding: navOpen ? '1.25rem 1.25rem 1.5rem' : '0 1.25rem',
+        maxHeight: navOpen ? '500px' : '0',
+        overflow: 'hidden',
+        transition: 'max-height 0.35s cubic-bezier(0.4,0,0.2,1), padding 0.3s ease',
+      }}>
+        {[
+          { to: '/',            end: true, Icon: Home,      label: 'Home' },
+          { to: '/tournaments', end: false, Icon: Trophy,    label: 'Torneios' },
+          { to: '/players',     end: false, Icon: Users,     label: 'Jogadores' },
+          { to: '/stats',       end: false, Icon: BarChart2, label: 'Estatísticas' },
+        ].map(({ to, end, Icon, label }) => (
+          <NavLink key={to} to={to} end={end} onClick={closeNav}
+            style={({ isActive }) => mobileNavLinkStyle(isActive)}>
+            <Icon size={20} /> {label}
+          </NavLink>
+        ))}
+
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+          <button onClick={() => { logout(); closeNav(); }} style={{
+            width: '100%', padding: '0.875rem 1.25rem',
+            display: 'flex', alignItems: 'center', gap: '12px',
+            background: 'rgba(255,75,75,0.06)', border: '1px solid rgba(255,75,75,0.15)',
+            color: '#ff4b4b', cursor: 'pointer', borderRadius: '12px',
+            fontFamily: 'Outfit', fontSize: '1rem', fontWeight: 600,
+            transition: 'all 0.2s',
+          }}>
+            <LogOut size={18} /> Sair da conta
+          </button>
+        </div>
+      </div>
+
+      {/* ── Main content ── */}
+      <main className="main-content" style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '2rem' }}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/tournaments" element={<Dashboard />} />
@@ -470,6 +559,7 @@ const AppShell = () => {
           <Route path="/history/:id" element={<TournamentHistoryView />} />
         </Routes>
       </main>
+
     </div>
   );
 };

@@ -156,3 +156,52 @@ h1, h2, h3 {
     transform: translateY(0);
   }
 }
+
+/* ── Mobile Nav Classes (controlled by media queries) ─────── */
+.desk-nav  { display: flex; }
+.mob-only  { display: none; }
+
+@media (max-width: 768px) {
+  .desk-nav  { display: none !important; }
+  .mob-only  { display: flex !important; }
+}
+
+/* ── Horizontal scroll container for bracket & tables ──────── */
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Mobile Responsive Layout ──────────────────────────────── */
+@media (max-width: 768px) {
+  .glass-panel {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .btn-primary, .btn-secondary {
+    padding: 10px 18px;
+    font-size: 0.9rem;
+  }
+
+  /* Main content padding reduction */
+  .main-content {
+    padding: 1rem !important;
+  }
+
+  /* Hide title text on very small screens */
+  .header-title {
+    font-size: 1.1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .glass-panel {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .header-title {
+    display: none !important;
+  }
+}
