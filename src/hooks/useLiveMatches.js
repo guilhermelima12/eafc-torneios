@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
 export const useLiveMatches = () => {
   const [liveMatches, setLiveMatches] = useState([]);
   // Unique channel name per hook instance — avoids conflicts when multiple
   // components (TournamentBracket + TournamentGroups) use this hook simultaneously
-  const channelId = React.useRef(`live_matches_${Math.random().toString(36).substr(2, 9)}`);
+  const channelId = useRef(`live_matches_${Math.random().toString(36).substr(2, 9)}`);
 
   useEffect(() => {
     // Initial fetch
