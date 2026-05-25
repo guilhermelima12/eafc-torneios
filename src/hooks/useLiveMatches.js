@@ -3,6 +3,9 @@ import { supabase } from '../lib/supabase';
 
 export const useLiveMatches = () => {
   const [liveMatches, setLiveMatches] = useState([]);
+  // Unique channel name per hook instance — avoids conflicts when multiple
+  // components (TournamentBracket + TournamentGroups) use this hook simultaneously
+  const channelId = React.useRef(`live_matches_${Math.random().toString(36).substr(2, 9)}`);
 
   useEffect(() => {
     // Initial fetch
@@ -14,7 +17,7 @@ export const useLiveMatches = () => {
 
     // Subscribe to realtime changes
     const channel = supabase
-      .channel('live_matches_realtime')
+      .channel(channelId.current)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'live_matches' }, (payload) => {
         if (payload.eventType === 'INSERT') {
           setLiveMatches(prev => [...prev.filter(m => m.match_key !== payload.new.match_key), payload.new]);

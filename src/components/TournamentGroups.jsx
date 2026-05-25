@@ -261,6 +261,8 @@ const TournamentGroups = ({
             <h4 style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Partidas</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {matches.filter(m => m.groupId === gIndex).map(match => {
+                // Skip matches where either player is missing (safety guard for old data)
+                if (!match.p1 || !match.p2) return null;
                 const round = match.groupId + 1;
                 const liveM = getLiveMatch(round, match.p1, match.p2);
                 const isMatchDone = match.score1 !== '' && match.score2 !== '';
@@ -284,8 +286,8 @@ const TournamentGroups = ({
                       )}
                       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
                         <div style={{ flex: 1, textAlign: 'right', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80px' }}>{match.p1.name}</span>
-                          <TeamLogo team={match.p1.team} size={22} />
+                          <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80px' }}>{match.p1?.name || '—'}</span>
+                          <TeamLogo team={match.p1?.team} size={22} />
                         </div>
                         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                           {readOnly ? (
@@ -303,8 +305,8 @@ const TournamentGroups = ({
                           )}
                         </div>
                         <div style={{ flex: 1, textAlign: 'left', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '6px' }}>
-                          <TeamLogo team={match.p2.team} size={22} />
-                          <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80px' }}>{match.p2.name}</span>
+                          <TeamLogo team={match.p2?.team} size={22} />
+                          <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80px' }}>{match.p2?.name || '—'}</span>
                         </div>
                       </div>
                       {/* Iniciar Partida button */}

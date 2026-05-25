@@ -1,11 +1,33 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Trophy, ArrowLeft, Pencil, X, Check, PenLine, Eye } from 'lucide-react';
+import { Trophy, ArrowLeft, Pencil, X, Check, PenLine, Eye, AlertTriangle } from 'lucide-react';
 import TeamLogo from './TeamLogo';
 import TournamentGroups from './TournamentGroups';
 import TournamentBracket from './TournamentBracket';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+
+/* ── Error Boundary ──────────────────────────────────────────── */
+class HistoryErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  componentDidCatch(err) { console.error('[HistoryView] Render error:', err); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ textAlign: 'center', marginTop: '4rem', padding: '2rem' }}>
+          <AlertTriangle size={48} color="#f87171" style={{ marginBottom: '1rem' }} />
+          <h2 style={{ color: '#f87171', marginBottom: '0.5rem' }}>Erro ao carregar torneio</h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+            {this.state.error?.message || 'Ocorreu um erro inesperado.'}
+          </p>
+          <Link to="/" className="btn-secondary" style={{ textDecoration: 'none', display: 'inline-block' }}>Voltar ao início</Link>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 /* ── Debounce helper ─────────────────────────────────────────── */
 const useSaveDebounce = (saveFn, delay = 1200) => {
@@ -112,6 +134,7 @@ const TournamentHistoryView = () => {
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Local editable copies of match data
   const [localGroups, setLocalGroups] = useState(null);
@@ -120,12 +143,18 @@ const TournamentHistoryView = () => {
 
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase.from('tournaments').select('*').eq('id', id).single();
-      if (!error && data) {
-        setTournament(data);
-        setLocalGroups(data.groups_data);
-        setLocalGroupMatches(data.group_matches);
-        setLocalBracketMatches(data.bracket_matches);
+      try {
+        const { data, error } = await supabase.from('tournaments').select('*').eq('id', id).single();
+        if (!error && data) {
+          setTournament(data);
+          setLocalGroups(data.groups_data);
+          setLocalGroupMatches(data.group_matches);
+          setLocalBracketMatches(data.bracket_matches);
+        }
+      } catch (err) {
+        console.error('[HistoryView] Load error:', err);
+      } finally {
+        setLoading(false);
       }
     };
     load();
@@ -203,6 +232,15 @@ const TournamentHistoryView = () => {
     });
     return qualified.length > 0 ? qualified : (tournament.players || []);
   }, [tournament, localGroups]);
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '6rem', color: 'var(--text-secondary)' }}>
+        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⏳</div>
+        <p>Carregando torneio...</p>
+      </div>
+    );
+  }
 
   if (!tournament) {
     return (
@@ -358,4 +396,10 @@ const TournamentHistoryView = () => {
   );
 };
 
-export default TournamentHistoryView;
+const TournamentHistoryViewWrapped = () => (
+  <HistoryErrorBoundary>
+    <TournamentHistoryView />
+  </HistoryErrorBoundary>
+);
+
+export default TournamentHistoryViewWrapped;
