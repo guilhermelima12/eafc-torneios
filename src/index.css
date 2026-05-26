@@ -159,7 +159,7 @@ h1, h2, h3 {
 
 /* ── Mobile Nav Classes (controlled by media queries) ─────── */
 .desk-nav  { display: flex; }
-.mob-only  { display: none; }
+.mob-only  { display: none !important; }
 
 @media (max-width: 768px) {
   .desk-nav  { display: none !important; }
