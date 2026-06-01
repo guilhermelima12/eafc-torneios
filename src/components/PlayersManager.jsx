@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Users, Plus, Trash2, Trophy, AlertCircle, Loader, Pencil, Check, X, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { getAbsolutePot, getPotStyle } from '../utils/seeding';
 
 // ── Helper: ordered standings from a tournament record ─────────
 const getTournamentStandings = (t) => {
@@ -237,26 +238,42 @@ const PlayersManager = () => {
                 <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
                   <th style={{ padding: '8px 12px', textAlign: 'left' }}>Pos</th>
                   <th style={{ padding: '8px 12px', textAlign: 'left' }}>Jogador</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'center' }}>Pote</th>
                   <th style={{ padding: '8px 12px', textAlign: 'center' }}>Seed</th>
                   <th style={{ padding: '8px 12px', textAlign: 'center' }}>Vitórias 🏆</th>
                 </tr>
               </thead>
               <tbody>
-                {ranking.map((p, i) => (
-                  <tr key={p.id} style={{
-                    borderBottom: '1px solid rgba(255,255,255,0.04)',
-                    background: i < 3 && p.wins > 0 ? `rgba(${i === 0 ? '255,215,0' : i === 1 ? '192,192,192' : '205,127,50'}, 0.03)` : 'transparent'
-                  }}>
-                    <td style={{ padding: '12px', color: i < 3 && p.wins > 0 ? medalColors[i] : 'var(--text-secondary)', fontWeight: 700 }}>
-                      {i < 3 && p.wins > 0 ? medalIcons[i] : `${i + 1}º`}
-                    </td>
-                    <td style={{ padding: '12px', fontWeight: 600 }}>{p.name}</td>
-                    <td style={{ padding: '12px', textAlign: 'center', color: 'var(--accent-primary)', fontWeight: 700 }}>#{p.seed ?? '—'}</td>
-                    <td style={{ padding: '12px', textAlign: 'center', color: p.wins > 0 ? '#FFD700' : 'var(--text-secondary)', fontWeight: p.wins > 0 ? 700 : 400 }}>
-                      {p.wins}
-                    </td>
-                  </tr>
-                ))}
+                {ranking.map((p, i) => {
+                  const potNum = getAbsolutePot(p.seed);
+                  const potStyle = getPotStyle(potNum);
+                  return (
+                    <tr key={p.id} style={{
+                      borderBottom: '1px solid rgba(255,255,255,0.04)',
+                      background: i < 3 && p.wins > 0 ? `rgba(${i === 0 ? '255,215,0' : i === 1 ? '192,192,192' : '205,127,50'}, 0.03)` : 'transparent'
+                    }}>
+                      <td style={{ padding: '12px', color: i < 3 && p.wins > 0 ? medalColors[i] : 'var(--text-secondary)', fontWeight: 700 }}>
+                        {i < 3 && p.wins > 0 ? medalIcons[i] : `${i + 1}º`}
+                      </td>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>{p.name}</td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                        {p.seed ? (
+                          <span style={{
+                            background: potStyle.background, border: potStyle.border,
+                            color: potStyle.color, padding: '2px 8px', borderRadius: '8px',
+                            fontSize: '0.75rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px'
+                          }}>
+                            {potStyle.icon} P{potNum}
+                          </span>
+                        ) : '—'}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center', color: 'var(--accent-primary)', fontWeight: 700 }}>#{p.seed ?? '—'}</td>
+                      <td style={{ padding: '12px', textAlign: 'center', color: p.wins > 0 ? '#FFD700' : 'var(--text-secondary)', fontWeight: p.wins > 0 ? 700 : 400 }}>
+                        {p.wins}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -377,7 +394,7 @@ const PlayersManager = () => {
                   </div>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: '1rem' }}>{p.name}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', flexWrap: 'wrap' }}>
                       <span style={{
                         background: 'rgba(0,255,135,0.1)', border: '1px solid rgba(0,255,135,0.2)',
                         color: 'var(--accent-primary)', padding: '1px 8px', borderRadius: '10px',
@@ -385,7 +402,20 @@ const PlayersManager = () => {
                       }}>
                         Seed #{p.seed ?? '—'}
                       </span>
-                      {winsMap[p.name] ? `🏆 ${winsMap[p.name]} vitória${winsMap[p.name] > 1 ? 's' : ''}` : 'Sem vitórias ainda'}
+                      {p.seed && (() => {
+                        const potNum = getAbsolutePot(p.seed);
+                        const potStyle = getPotStyle(potNum);
+                        return (
+                          <span style={{
+                            background: potStyle.background, border: potStyle.border,
+                            color: potStyle.color, padding: '1px 8px', borderRadius: '10px',
+                            fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px'
+                          }}>
+                            {potStyle.icon} {potStyle.label}
+                          </span>
+                        );
+                      })()}
+                      <span>{winsMap[p.name] ? `🏆 ${winsMap[p.name]} vitória${winsMap[p.name] > 1 ? 's' : ''}` : 'Sem vitórias ainda'}</span>
                     </div>
                   </div>
                 </div>

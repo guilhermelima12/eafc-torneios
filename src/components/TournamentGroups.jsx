@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TeamLogo from './TeamLogo';
 import { CheckCircle2, Play } from 'lucide-react';
+import { sortBySeed, shuffleArray, getPotStyle } from '../utils/seeding';
 import { useLiveMatches } from '../hooks/useLiveMatches';
 import LiveMatchModal from './LiveMatchModal';
 import LiveScoreBadge from './LiveScoreBadge';
@@ -11,11 +12,27 @@ const emptyStats = () => ({ pts: 0, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0 
 const generateGroupsAndMatches = (players, legsMode = 'single', numGroups = 2) => {
   const groups = Array.from({ length: numGroups }, () => []);
 
-  players.forEach((p, i) => {
-    const round = Math.floor(i / numGroups);
-    const dir = round % 2 === 0 ? 1 : -1;
-    const groupIndex = dir === 1 ? i % numGroups : (numGroups - 1) - (i % numGroups);
-    groups[groupIndex].push({ ...p, ...emptyStats() });
+  // Pot-based randomized distribution
+  const sorted = sortBySeed(players);
+  const pots = [];
+  for (let i = 0; i < sorted.length; i += numGroups) {
+    pots.push(sorted.slice(i, i + numGroups));
+  }
+
+  pots.forEach((pot, potIdx) => {
+    const shuffledPot = shuffleArray(pot);
+    // Sort group indices by count to keep them perfectly balanced
+    const groupIndices = Array.from({ length: numGroups }, (_, i) => i)
+      .sort((a, b) => groups[a].length - groups[b].length);
+
+    shuffledPot.forEach((player, idx) => {
+      const gIdx = groupIndices[idx];
+      groups[gIdx].push({
+        ...player,
+        potNumber: player.potNumber || (potIdx + 1),
+        ...emptyStats()
+      });
+    });
   });
 
   const matches = [];
@@ -237,6 +254,18 @@ const TournamentGroups = ({
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <TeamLogo team={p.team} size={20} />
                           <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>{p.name}</span>
+                          {p.potNumber && (() => {
+                            const potStyle = getPotStyle(p.potNumber);
+                            return (
+                              <span style={{
+                                fontSize: '0.65rem', padding: '1px 4px', borderRadius: '4px',
+                                background: potStyle.background, border: potStyle.border, color: potStyle.color,
+                                fontWeight: 700, marginLeft: '4px', display: 'inline-block'
+                              }} title={potStyle.label}>
+                                P{p.potNumber}
+                              </span>
+                            );
+                          })()}
                         </div>
                       </td>
                       <td style={{ padding: '8px 4px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>{p.pts}</td>

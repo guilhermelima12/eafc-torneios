@@ -4,6 +4,7 @@ import { Users, Shield, Plus, Trash2, CheckCircle2, ArrowRight, Play, Dices, Use
 import TeamLogo from './TeamLogo';
 import defaultTeamsData from '../data/teams.json';
 import { supabase } from '../lib/supabase';
+import { getAbsolutePot, getPotStyle } from '../utils/seeding';
 
 const PlayerRegistration = () => {
   const navigate = useNavigate();
@@ -86,15 +87,46 @@ const PlayerRegistration = () => {
   };
 
   const startDraft = () => {
-    const sortedPlayers = [...players].sort((a, b) => b.lastRank - a.lastRank);
-    setPlayers(sortedPlayers);
+    const sorted = [...players].sort((a, b) => a.lastRank - b.lastRank);
+    const numPots = config.playerPotsCount === 'auto'
+      ? (config.format === 'groups' ? (config.numGroups || 2) : 2)
+      : parseInt(config.playerPotsCount, 10);
+    const potSize = Math.ceil(sorted.length / numPots);
+    const initialPlayers = sorted.map((p, idx) => ({
+      ...p,
+      potNumber: Math.min(Math.floor(idx / potSize) + 1, numPots)
+    }));
+    setPlayers(initialPlayers);
+    setStep('pots_preview');
+  };
+
+  const startActualDraft = () => {
+    const sortedForDraft = [...players].sort((a, b) => {
+      const potA = a.potNumber || 4;
+      const potB = b.potNumber || 4;
+      if (potB !== potA) return potB - potA;
+      return b.lastRank - a.lastRank;
+    });
+    setPlayers(sortedForDraft);
     setStep('draft');
   };
 
   // --- DRAFT ---
-  const availableTeams = draftPool.filter(team =>
+  const allowedTeamPot = config && config.enableTeamPots && players[draftIndex]
+    ? (config.teamPotsMode === 'handicap'
+        ? Math.max(1, Math.min((config.teamPotsCount || 3) - (players[draftIndex].potNumber || 1) + 1, config.teamPotsCount || 3))
+        : Math.min(players[draftIndex].potNumber || 1, config.teamPotsCount || 3))
+    : null;
+
+  const baseAvailableTeams = draftPool.filter(team =>
     !players.some(p => p.team?.id === team.id)
   );
+
+  const availableTeams = baseAvailableTeams.filter(team =>
+    !config || !config.enableTeamPots || team.potNumber === allowedTeamPot
+  );
+
+  const finalAvailableTeams = availableTeams.length > 0 ? availableTeams : baseAvailableTeams;
 
   const confirmPick = (teamId) => {
     const selectedTeam = draftPool.find(t => t.id === teamId);
@@ -116,12 +148,12 @@ const PlayerRegistration = () => {
   };
 
   const handleRandomPick = () => {
-    if (availableTeams.length === 0) return;
+    if (finalAvailableTeams.length === 0) return;
     setIsSpinning(true);
     let count = 0;
     const interval = setInterval(() => {
-      const randomIndex = Math.floor(Math.random() * availableTeams.length);
-      setSelectedTeamId(availableTeams[randomIndex].id);
+      const randomIndex = Math.floor(Math.random() * finalAvailableTeams.length);
+      setSelectedTeamId(finalAvailableTeams[randomIndex].id);
       count++;
       if (count > 10) {
         clearInterval(interval);
@@ -144,7 +176,7 @@ const PlayerRegistration = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <Users size={28} color="var(--accent-secondary)" />
           <h2 style={{ fontSize: '1.8rem' }}>
-            {step === 'registration' ? 'Selecionar Participantes' : step === 'draft' ? 'Sala de Draft' : 'Resumo do Draft'}
+            {step === 'registration' ? 'Selecionar Participantes' : step === 'pots_preview' ? 'Potes do Torneio' : step === 'draft' ? 'Sala de Draft' : 'Resumo do Draft'}
           </h2>
         </div>
         {step === 'registration' && (
@@ -206,7 +238,18 @@ const PlayerRegistration = () => {
                         {selected ? <CheckCircle2 size={16} /> : rp.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{rp.name}</div>
+                        <div style={{ fontWeight: 600, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {rp.name}
+                          {rp.seed && (() => {
+                            const potNum = getAbsolutePot(rp.seed);
+                            const potStyle = getPotStyle(potNum);
+                            return (
+                              <span style={{ fontSize: '0.7rem', padding: '1px 4px', borderRadius: '4px', background: potStyle.background, color: potStyle.color, border: potStyle.border, fontWeight: 700 }}>
+                                P{potNum}
+                              </span>
+                            );
+                          })()}
+                        </div>
                         <div style={{ fontSize: '0.75rem', color: selected ? 'var(--accent-primary)' : 'var(--text-secondary)' }}>
                           Seed #{rp.seed ?? '—'}
                         </div>
@@ -233,12 +276,24 @@ const PlayerRegistration = () => {
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <div style={{
-                        background: 'rgba(0,255,135,0.1)', color: 'var(--accent-primary)',
+                        background: 'rgba(0,0,0,0.1)', color: 'var(--accent-primary)',
                         padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 700
                       }}>
                         #{player.lastRank}
                       </div>
                       <span style={{ fontWeight: 600 }}>{player.name}</span>
+                      {player.lastRank && (() => {
+                        const potNum = getAbsolutePot(player.lastRank);
+                        const potStyle = getPotStyle(potNum);
+                        return (
+                          <span style={{
+                            fontSize: '0.7rem', padding: '1px 5px', borderRadius: '4px',
+                            background: potStyle.background, border: potStyle.border, color: potStyle.color, fontWeight: 700
+                          }}>
+                            {potStyle.icon} P{potNum}
+                          </span>
+                        );
+                      })()}
                     </div>
                     <button onClick={() => removePlayer(player.id)} style={{
                       background: 'transparent', border: 'none', color: '#ff4b4b',
@@ -310,17 +365,107 @@ const PlayerRegistration = () => {
         </>
       )}
 
+      {/* STEP: POTS PREVIEW */}
+      {step === 'pots_preview' && (() => {
+        const potsCount = config.playerPotsCount === 'auto'
+          ? (config.format === 'groups' ? (config.numGroups || 2) : 2)
+          : parseInt(config.playerPotsCount, 10);
+
+        return (
+          <div>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '0.95rem' }}>
+              Revise a distribuição dos jogadores nos potes de sorteio. Você pode mover qualquer jogador de pote se desejar personalizar:
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2.5rem' }}>
+              {Array.from({ length: potsCount }, (_, i) => i + 1).map(potNum => {
+                const potStyle = getPotStyle(potNum);
+                const potPlayers = players.filter(p => p.potNumber === potNum);
+
+                return (
+                  <div key={potNum} style={{
+                    background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)',
+                    borderRadius: '16px', padding: '1.25rem'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.04)', paddingBottom: '0.5rem' }}>
+                      <span style={{ fontSize: '1.4rem' }}>{potStyle.icon}</span>
+                      <h3 style={{ margin: 0, color: potStyle.color, fontSize: '1.2rem' }}>{potStyle.label}</h3>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '12px', marginLeft: 'auto' }}>
+                        {potPlayers.length} {potPlayers.length === 1 ? 'jogador' : 'jogadores'}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {potPlayers.map(p => (
+                        <div key={p.id} style={{
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                          padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)',
+                          borderRadius: '10px'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontWeight: 600 }}>{p.name}</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Seed #{p.lastRank}</span>
+                          </div>
+                          
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Alterar pote:</span>
+                            <select
+                              value={p.potNumber}
+                              onChange={e => {
+                                const newPot = parseInt(e.target.value, 10);
+                                setPlayers(prev => prev.map(pl => pl.id === p.id ? { ...pl, potNumber: newPot } : pl));
+                              }}
+                              style={{
+                                background: 'rgba(10,14,26,0.8)', border: '1px solid rgba(255,255,255,0.12)',
+                                color: 'white', fontSize: '0.8rem', fontWeight: 600, borderRadius: '6px',
+                                padding: '4px 8px', cursor: 'pointer', outline: 'none', fontFamily: 'Outfit'
+                              }}
+                            >
+                              {Array.from({ length: potsCount }, (_, idx) => (
+                                <option key={idx + 1} value={idx + 1}>Pote {idx + 1}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      ))}
+                      {potPlayers.length === 0 && (
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic', margin: '4px 0' }}>Pote vazio.</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={startActualDraft} className="btn-primary" style={{ padding: '14px 32px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                Confirmar Potes e Ir para o Draft <ArrowRight size={20} />
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* STEP 2: DRAFT */}
       {step === 'draft' && (
         <div style={{ textAlign: 'center' }}>
-          <div style={{ marginBottom: '3rem', padding: '2rem', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', border: '1px solid var(--accent-secondary)' }}>
-            <h3 style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontWeight: 500, letterSpacing: '2px', textTransform: 'uppercase' }}>
+          <div style={{ marginBottom: '3rem', padding: '2rem', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', border: '1px solid var(--accent-secondary)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+            <h3 style={{ color: 'var(--text-secondary)', marginBottom: 0, fontWeight: 500, letterSpacing: '2px', textTransform: 'uppercase' }}>
               Com a Pick #{draftIndex + 1}...
             </h3>
-            <h1 style={{ fontSize: '3rem', color: 'var(--accent-primary)', marginBottom: '0.5rem', textShadow: '0 0 20px rgba(0,255,135,0.4)' }}>
+            <h1 style={{ fontSize: '3rem', color: 'var(--accent-primary)', marginBottom: 0, textShadow: '0 0 20px rgba(0,255,135,0.4)' }}>
               {players[draftIndex].name}
             </h1>
-            <p style={{ color: 'var(--text-secondary)' }}>(Seed: #{players[draftIndex].lastRank})</p>
+            <p style={{ color: 'var(--text-secondary)', margin: 0 }}>(Seed: #{players[draftIndex].lastRank} | Pote de Jogador: {players[draftIndex].potNumber})</p>
+            {config.enableTeamPots && allowedTeamPot && (
+              <div style={{
+                marginTop: '0.5rem', padding: '6px 16px', borderRadius: '8px', fontSize: '0.85rem',
+                background: 'rgba(96,239,255,0.08)', border: '1px solid rgba(96,239,255,0.25)', color: 'var(--accent-secondary)',
+                fontWeight: 600
+              }}>
+                {config.teamPotsMode === 'handicap' ? '⚖️ Handicap Ativado' : '🥇 Sorteio Padrão'} : Escolha obrigatória do <strong>Pote {allowedTeamPot} de Times</strong>
+              </div>
+            )}
           </div>
 
           <div style={{ maxWidth: '400px', margin: '0 auto' }}>
@@ -341,9 +486,9 @@ const PlayerRegistration = () => {
                     }}
                   >
                     <option value="" disabled style={{ background: 'var(--bg-secondary)' }}>Selecione um clube...</option>
-                    {availableTeams.map(team => (
+                    {finalAvailableTeams.map(team => (
                       <option key={team.id} value={team.id} style={{ background: 'var(--bg-secondary)', color: 'white' }}>
-                        {team.name} (GER: {team.overall})
+                        {team.name} (GER: {team.overall}) {config.enableTeamPots ? `[Pote ${team.potNumber}]` : ''}
                       </option>
                     ))}
                   </select>
@@ -402,7 +547,20 @@ const PlayerRegistration = () => {
               }}>
                 <TeamLogo team={player.team} size={50} />
                 <div>
-                  <h4 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{player.name}</h4>
+                  <h4 style={{ fontSize: '1.1rem', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {player.name}
+                    {player.potNumber && (() => {
+                      const potStyle = getPotStyle(player.potNumber);
+                      return (
+                        <span style={{
+                          fontSize: '0.72rem', padding: '1px 6px', borderRadius: '4px',
+                          background: potStyle.background, border: potStyle.border, color: potStyle.color, fontWeight: 700
+                        }}>
+                          {potStyle.icon} P{player.potNumber}
+                        </span>
+                      );
+                    })()}
+                  </h4>
                   <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                     {player.team.name} <span style={{ opacity: 0.5 }}>| Pick #{index + 1}</span>
                   </div>

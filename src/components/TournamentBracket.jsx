@@ -5,6 +5,7 @@ import { useLiveMatches } from '../hooks/useLiveMatches';
 import LiveMatchModal from './LiveMatchModal';
 import LiveScoreBadge from './LiveScoreBadge';
 import { useAuth } from '../context/AuthContext';
+import { sortBySeed, shuffleArray, getPotStyle } from '../utils/seeding';
 
 /* ── Layout Constants ─────────────────────────────────────────── */
 const CARD_W   = 216;   // match card width
@@ -19,23 +20,60 @@ export const generateKnockoutMatches = (players) => {
   const count = players.length;
 
   if (count === 8) {
-    matches.push({ id: 1, round: 1, p1: players[0], p2: players[7], score1: null, score2: null, winner: null });
-    matches.push({ id: 2, round: 1, p1: players[3], p2: players[4], score1: null, score2: null, winner: null });
-    matches.push({ id: 3, round: 1, p1: players[2], p2: players[5], score1: null, score2: null, winner: null });
-    matches.push({ id: 4, round: 1, p1: players[1], p2: players[6], score1: null, score2: null, winner: null });
+    let p1 = players.filter(p => p.potNumber === 1);
+    let p2 = players.filter(p => p.potNumber === 2);
+    let p3 = players.filter(p => p.potNumber === 3);
+    let p4 = players.filter(p => p.potNumber === 4);
+
+    if (p1.length !== 2 || p2.length !== 2 || p3.length !== 2 || p4.length !== 2) {
+      const sorted = sortBySeed(players);
+      p1 = sorted.slice(0, 2).map(p => ({ ...p, potNumber: 1 }));
+      p2 = sorted.slice(2, 4).map(p => ({ ...p, potNumber: 2 }));
+      p3 = sorted.slice(4, 6).map(p => ({ ...p, potNumber: 3 }));
+      p4 = sorted.slice(6, 8).map(p => ({ ...p, potNumber: 4 }));
+    }
+
+    const shufPot1 = shuffleArray(p1);
+    const shufPot2 = shuffleArray(p2);
+    const shufPot3 = shuffleArray(p3);
+    const shufPot4 = shuffleArray(p4);
+
+    matches.push({ id: 1, round: 1, p1: shufPot1[0], p2: shufPot4[0], score1: null, score2: null, winner: null });
+    matches.push({ id: 2, round: 1, p1: shufPot2[0], p2: shufPot3[0], score1: null, score2: null, winner: null });
+    matches.push({ id: 3, round: 1, p1: shufPot2[1], p2: shufPot3[1], score1: null, score2: null, winner: null });
+    matches.push({ id: 4, round: 1, p1: shufPot1[1], p2: shufPot4[1], score1: null, score2: null, winner: null });
+
   } else if (count === 4) {
-    matches.push({ id: 1, round: 1, p1: players[0], p2: players[3], score1: null, score2: null, winner: null });
-    matches.push({ id: 2, round: 1, p1: players[1], p2: players[2], score1: null, score2: null, winner: null });
+    let p1 = players.filter(p => p.potNumber === 1);
+    let p2 = players.filter(p => p.potNumber === 2);
+
+    if (p1.length !== 2 || p2.length !== 2) {
+      const sorted = sortBySeed(players);
+      p1 = sorted.slice(0, 2).map(p => ({ ...p, potNumber: 1 }));
+      p2 = sorted.slice(2, 4).map(p => ({ ...p, potNumber: 2 }));
+    }
+
+    const shufPot1 = shuffleArray(p1);
+    const shufPot2 = shuffleArray(p2);
+
+    matches.push({ id: 1, round: 1, p1: shufPot1[0], p2: shufPot2[0], score1: null, score2: null, winner: null });
+    matches.push({ id: 2, round: 1, p1: shufPot1[1], p2: shufPot2[1], score1: null, score2: null, winner: null });
+
   } else if (count >= 2) {
+    const sorted = sortBySeed(players);
+    const shuf = shuffleArray(sorted).map((p, idx) => ({ ...p, potNumber: Math.floor(idx / 2) + 1 }));
     let id = 1;
     const r1 = [];
-    for (let i = 0; i + 1 < count; i += 2)
-      r1.push({ id: id++, round: 1, p1: players[i], p2: players[i + 1], score1: null, score2: null, winner: null });
-    if (count % 2 !== 0)
-      r1.push({ id: id++, round: 1, p1: players[count - 1], p2: null, score1: null, score2: null, winner: players[count - 1], isBye: true });
+    for (let i = 0; i + 1 < count; i += 2) {
+      r1.push({ id: id++, round: 1, p1: shuf[i], p2: shuf[i + 1], score1: null, score2: null, winner: null });
+    }
+    if (count % 2 !== 0) {
+      r1.push({ id: id++, round: 1, p1: shuf[count - 1], p2: null, score1: null, score2: null, winner: shuf[count - 1], isBye: true });
+    }
     matches.push(...r1);
-    if (r1.length > 1)
+    if (r1.length > 1) {
       matches.push({ id: id++, round: 2, p1: null, p2: null, score1: null, score2: null, winner: null });
+    }
   }
 
   return matches;
@@ -140,10 +178,22 @@ const MatchCard = ({ match, onUpdateScore, readOnly, liveMatch, onStartLive }) =
           fontWeight: isWinner ? 700 : 500,
           color: player ? (isWinner ? 'var(--accent-primary)' : isFinished ? 'rgba(255,255,255,0.45)' : 'white') : 'var(--text-secondary)',
           fontSize: '0.88rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          transition: 'color 0.2s'
+          transition: 'color 0.2s', marginRight: '4px'
         }}>
           {player?.name || (match.isBye ? '—' : 'TBD')}
         </span>
+        {player && player.potNumber && (() => {
+          const potStyle = getPotStyle(player.potNumber);
+          return (
+            <span style={{
+              fontSize: '0.65rem', padding: '1px 4px', borderRadius: '4px',
+              background: potStyle.background, border: potStyle.border, color: potStyle.color,
+              fontWeight: 700, flexShrink: 0
+            }} title={potStyle.label}>
+              P{player.potNumber}
+            </span>
+          );
+        })()}
       </div>
 
       {/* Right: score or input */}

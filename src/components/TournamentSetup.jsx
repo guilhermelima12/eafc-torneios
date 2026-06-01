@@ -12,6 +12,10 @@ const TournamentSetup = () => {
     legsMode: 'single',
     numGroups: 2,
     advancePerGroup: 2,
+    playerPotsCount: 'auto',
+    enableTeamPots: false,
+    teamPotsCount: 3,
+    teamPotsMode: 'standard',
   });
 
   const handleSubmit = (e) => {
@@ -214,6 +218,150 @@ const TournamentSetup = () => {
               Sorteio Aleatório
             </button>
           </div>
+        </div>
+
+        {/* ── SEÇÃO: CONFIGURAÇÕES DE POTES ── */}
+        <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <h3 style={{ fontSize: '1.1rem', color: 'var(--accent-secondary)', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            🏆 Potes e Sorteio
+          </h3>
+
+          {/* Quantidade de Potes de Jogadores */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 500 }}>
+              Potes de Jogadores (Sorteio)
+            </label>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {[
+                { v: 'auto', label: 'Auto' },
+                { v: 2, label: '2 Potes' },
+                { v: 3, label: '3 Potes' },
+                { v: 4, label: '4 Potes' }
+              ].map(({ v, label }) => {
+                const active = formData.playerPotsCount === v;
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, playerPotsCount: v })}
+                    style={{
+                      flex: 1, minWidth: '70px', padding: '10px', borderRadius: '8px', cursor: 'pointer',
+                      fontFamily: 'Outfit', fontWeight: 600, transition: 'all 0.2s',
+                      border: `1px solid ${active ? 'var(--accent-primary)' : 'var(--border-color)'}`,
+                      background: active ? 'rgba(0,255,135,0.1)' : 'transparent',
+                      color: active ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Ativar Potes de Times */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 500 }}>
+              Dividir Times em Potes (Draft)
+            </label>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {[
+                { v: false, label: 'Não' },
+                { v: true, label: 'Sim' }
+              ].map(({ v, label }) => {
+                const active = formData.enableTeamPots === v;
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, enableTeamPots: v })}
+                    style={{
+                      flex: 1, padding: '10px', borderRadius: '8px', cursor: 'pointer',
+                      fontFamily: 'Outfit', fontWeight: 600, transition: 'all 0.2s',
+                      border: `1px solid ${active ? 'var(--accent-primary)' : 'var(--border-color)'}`,
+                      background: active ? 'rgba(0,255,135,0.1)' : 'transparent',
+                      color: active ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Opções adicionais de potes de times */}
+          {formData.enableTeamPots && (
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1rem',
+              background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-color)', borderRadius: '12px',
+              animation: 'fadeIn 0.2s ease-out'
+            }}>
+              {/* Quantidade de Potes de Times */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                  Quantidade de Potes de Times
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {[2, 3, 4].map(n => {
+                    const active = formData.teamPotsCount === n;
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, teamPotsCount: n })}
+                        style={{
+                          flex: 1, padding: '8px', borderRadius: '8px', cursor: 'pointer',
+                          fontFamily: 'Outfit', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s',
+                          border: `1px solid ${active ? 'var(--accent-secondary)' : 'var(--border-color)'}`,
+                          background: active ? 'rgba(96,239,255,0.1)' : 'transparent',
+                          color: active ? 'var(--accent-secondary)' : 'var(--text-secondary)',
+                        }}
+                      >
+                        {n} Potes
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Modo de Distribuição/Emparelhamento */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                  Distribuição no Draft
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {[
+                    { v: 'standard', label: 'Padrão (Forte x Forte)' },
+                    { v: 'handicap', label: 'Handicap (Forte x Fraco)' }
+                  ].map(({ v, label }) => {
+                    const active = formData.teamPotsMode === v;
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, teamPotsMode: v })}
+                        style={{
+                          flex: 1, padding: '8px', borderRadius: '8px', cursor: 'pointer',
+                          fontFamily: 'Outfit', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s',
+                          border: `1px solid ${active ? 'var(--accent-secondary)' : 'var(--border-color)'}`,
+                          background: active ? 'rgba(96,239,255,0.1)' : 'transparent',
+                          color: active ? 'var(--accent-secondary)' : 'var(--text-secondary)',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p style={{ margin: '8px 0 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                  {formData.teamPotsMode === 'handicap' 
+                    ? '💡 Handicap: Jogadores com melhores seeds (mais fortes) serão limitados a escolher times de potes mais fracos, enquanto jogadores mais fracos pegarão os melhores times.' 
+                    : '💡 Padrão: Cada pote de jogador escolhe de seu pote correspondente de times (Pote 1 de jogadores escolhe do Pote 1 de times).'}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         <button type="submit" className="btn-primary" style={{ marginTop: '1rem', padding: '16px', fontSize: '1.2rem' }}>
